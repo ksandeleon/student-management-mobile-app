@@ -4,6 +4,7 @@ import 'package:true_studentmgnt_mobapp/frontend/dashboard_screen.dart';
 import 'package:true_studentmgnt_mobapp/frontend/login_screen.dart';
 import 'package:true_studentmgnt_mobapp/frontend/signup_screen.dart';
 import 'package:true_studentmgnt_mobapp/frontend/welcome_screen.dart';
+import 'package:true_studentmgnt_mobapp/utilities/app_theme.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -18,10 +19,9 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'GO STUDENT',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-
-      ),
+      theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
+      themeMode: ThemeMode.system,
 
       initialRoute: 'welcome_screen',
       routes: {
@@ -29,7 +29,7 @@ class MyApp extends StatelessWidget {
         LoginScreen.id: (context) => LoginScreen(), //id = "login_screen"
         SignupScreen.id: (context) => SignupScreen(), //id = "signup_screen"
         DashboardScreen.id: (context) => DashboardScreen(), // id = "dashboard_screen"
-        
+
       },
     );
   }
