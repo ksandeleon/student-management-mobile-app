@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:true_studentmgnt_mobapp/utilities/constants.dart';
 import 'package:intl/intl.dart';
 
+
 class SignupScreen extends StatefulWidget {
   static const String id = 'signup_screen';
 

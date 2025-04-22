@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
+
 import 'package:true_studentmgnt_mobapp/frontend/dashboard_screen.dart';
 
 import 'package:true_studentmgnt_mobapp/frontend/login_screen.dart';
@@ -6,8 +9,12 @@ import 'package:true_studentmgnt_mobapp/frontend/signup_screen.dart';
 import 'package:true_studentmgnt_mobapp/frontend/welcome_screen.dart';
 import 'package:true_studentmgnt_mobapp/utilities/app_theme.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+
+    options: DefaultFirebaseOptions.currentPlatform,
+);
 
   runApp(const MyApp());
 }

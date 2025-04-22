@@ -37,7 +37,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   void _handleLogin() {
     if (_formKey.currentState!.validate()) {
-      // Here you would connect to Firebase Auth
+      // Here you would connect to Firebase Authcls
       Navigator.pop(context);
     }
   }
