@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:true_studentmgnt_mobapp/utilities/constants.dart';
 import 'package:intl/intl.dart';
 
+import 'package:true_studentmgnt_mobapp/utilities/constants.dart';
+import 'package:true_studentmgnt_mobapp/services/auth_service.dart';
+import 'package:true_studentmgnt_mobapp/models/user_model.dart';
 
 class SignupScreen extends StatefulWidget {
   static const String id = 'signup_screen';
@@ -73,6 +75,74 @@ class _SignupScreenState extends State<SignupScreen> {
     super.dispose();
   }
 
+  final AuthService _authService = AuthService();
+
+  void _handleSignup() async {
+    if (_formKey.currentState!.validate()) {
+      try {
+        // Show loading indicator
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder:
+              (context) => const Center(child: CircularProgressIndicator()),
+        );
+
+        // Create user based on type
+        UserModel? user;
+        if (_userType == 'student') {
+          user = await _authService.signUp(
+            email: _emailController.text.trim(),
+            password: _passwordController.text.trim(),
+            firstName: _firstNameController.text.trim(),
+            lastName: _lastNameController.text.trim(),
+            phone: _phoneController.text.trim(),
+            userType: _userType,
+            middleName: _middleNameController.text.trim(),
+            studentNumber: _studentNumberController.text.trim(),
+            address: _addressController.text.trim(),
+            course: _courseController.text.trim(),
+            dob: _selectedDate,
+          );
+        } else {
+          user = await _authService.signUp(
+            email: _emailController.text.trim(),
+            password: _passwordController.text.trim(),
+            firstName: _firstNameController.text.trim(),
+            lastName: _lastNameController.text.trim(),
+            phone: _phoneController.text.trim(),
+            userType: _userType,
+            middleName: _middleNameController.text.trim(),
+            department: _departmentController.text.trim(),
+            jobTitle: _selectedJobTitle,
+          );
+        }
+
+        // Hide loading indicator
+        Navigator.pop(context);
+
+        if (user != null) {
+          // Navigate to home screen or show success message
+          Navigator.pop(context);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Account created successfully!'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+      } catch (e) {
+        // Hide loading indicator
+        Navigator.pop(context);
+
+        // Show error message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.toString()), backgroundColor: Colors.red),
+        );
+      }
+    }
+  }
+
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
       context: context,
@@ -97,13 +167,6 @@ class _SignupScreenState extends State<SignupScreen> {
       setState(() {
         _selectedDate = picked;
       });
-    }
-  }
-
-  void _handleSignup() {
-    if (_formKey.currentState!.validate()) {
-      // Handle signup with Firebase
-      Navigator.pop(context);
     }
   }
 
