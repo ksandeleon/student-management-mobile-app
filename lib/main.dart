@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'firebase_options.dart';
+import 'firebase/firebase_options.dart';
 
-import 'package:true_studentmgnt_mobapp/frontend/dashboard_screen.dart';
-
-import 'package:true_studentmgnt_mobapp/frontend/login_screen.dart';
-import 'package:true_studentmgnt_mobapp/frontend/signup_screen.dart';
-import 'package:true_studentmgnt_mobapp/frontend/welcome_screen.dart';
-import 'package:true_studentmgnt_mobapp/utilities/app_theme.dart';
+import 'package:true_studentmgnt_mobapp/features/auth/presentation/screens/login_screen.dart';
+import 'package:true_studentmgnt_mobapp/features/auth/presentation/screens/signup_screen.dart';
+import 'package:true_studentmgnt_mobapp/features/auth/presentation/screens/welcome_screen.dart';
+import 'package:true_studentmgnt_mobapp/config/app_theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

@@ -20,8 +20,6 @@ class AppTheme {
       onSecondary: Colors.white,
       error: Colors.redAccent,
       onError: Colors.white,
-      background: Colors.white,
-      onBackground: Colors.black87,
       surface: Colors.white,
       onSurface: Colors.black87,
     ),
@@ -96,8 +94,6 @@ class AppTheme {
       onSecondary: Colors.white,
       error: Colors.redAccent,
       onError: Colors.white,
-      background: primaryBackground,
-      onBackground: Colors.white,
       surface: Color(0xFF2C1446), // Slightly lighter than primary for cards
       onSurface: Colors.white,
     ),

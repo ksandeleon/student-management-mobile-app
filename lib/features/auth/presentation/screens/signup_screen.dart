@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-import 'package:true_studentmgnt_mobapp/utilities/constants.dart';
+import 'package:true_studentmgnt_mobapp/config/constants.dart';
 import 'package:true_studentmgnt_mobapp/services/auth_service.dart';
-import 'package:true_studentmgnt_mobapp/models/user_model.dart';
+import 'package:true_studentmgnt_mobapp/features/auth/data/models/user_model.dart';
 
 class SignupScreen extends StatefulWidget {
   static const String id = 'signup_screen';
@@ -75,71 +75,55 @@ class _SignupScreenState extends State<SignupScreen> {
     super.dispose();
   }
 
-  final AuthService _authService = AuthService();
-
   void _handleSignup() async {
-    if (_formKey.currentState!.validate()) {
-      try {
-        // Show loading indicator
-        showDialog(
-          context: context,
-          barrierDismissible: false,
-          builder:
-              (context) => const Center(child: CircularProgressIndicator()),
+    if (!_formKey.currentState!.validate()) return;
+
+    final authService = AuthService();
+
+    final email = _emailController.text.trim();
+    final password = _passwordController.text.trim();
+    final firstName = _firstNameController.text.trim();
+    final lastName = _lastNameController.text.trim();
+    final phone = _phoneController.text.trim();
+    final middleName = _middleNameController.text.trim().isEmpty ? null : _middleNameController.text.trim();
+
+    try {
+      if (_userType == 'student') {
+        await authService.signUpStudent(
+          email: email,
+          password: password,
+          firstName: firstName,
+          lastName: lastName,
+          phone: phone,
+          middleName: middleName,
+          studentNumber: _studentNumberController.text.trim().isEmpty ? null : _studentNumberController.text.trim(),
+          address: _addressController.text.trim().isEmpty ? null : _addressController.text.trim(),
+          course: _courseController.text.trim().isEmpty ? null : _courseController.text.trim(),
+          dob: _selectedDate, // make sure _selectedDate is nullable DateTime?
         );
-
-        // Create user based on type
-        UserModel? user;
-        if (_userType == 'student') {
-          user = await _authService.signUp(
-            email: _emailController.text.trim(),
-            password: _passwordController.text.trim(),
-            firstName: _firstNameController.text.trim(),
-            lastName: _lastNameController.text.trim(),
-            phone: _phoneController.text.trim(),
-            userType: _userType,
-            middleName: _middleNameController.text.trim(),
-            studentNumber: _studentNumberController.text.trim(),
-            address: _addressController.text.trim(),
-            course: _courseController.text.trim(),
-            dob: _selectedDate,
-          );
-        } else {
-          user = await _authService.signUp(
-            email: _emailController.text.trim(),
-            password: _passwordController.text.trim(),
-            firstName: _firstNameController.text.trim(),
-            lastName: _lastNameController.text.trim(),
-            phone: _phoneController.text.trim(),
-            userType: _userType,
-            middleName: _middleNameController.text.trim(),
-            department: _departmentController.text.trim(),
-            jobTitle: _selectedJobTitle,
-          );
-        }
-
-        // Hide loading indicator
-        Navigator.pop(context);
-
-        if (user != null) {
-          // Navigate to home screen or show success message
-          Navigator.pop(context);
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Account created successfully!'),
-              backgroundColor: Colors.green,
-            ),
-          );
-        }
-      } catch (e) {
-        // Hide loading indicator
-        Navigator.pop(context);
-
-        // Show error message
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString()), backgroundColor: Colors.red),
+      } else {
+        await authService.signUpAdmin(
+          email: email,
+          password: password,
+          firstName: firstName,
+          lastName: lastName,
+          phone: phone,
+          middleName: middleName,
+          address: _addressController.text.trim().isEmpty ? null : _addressController.text.trim(),
+          dob: _selectedDate,
+          department: _departmentController.text.trim().isEmpty ? null : _departmentController.text.trim(),
+          jobTitle: _selectedJobTitle,
         );
       }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Signup successful!')),
+      );
+      Navigator.pop(context); // Navigate to login or home
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Signup failed: $e')),
+      );
     }
   }
 

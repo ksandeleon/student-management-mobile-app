@@ -1,61 +1,112 @@
-// services/auth_service.dart
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-import 'package:true_studentmgnt_mobapp/models/user_model.dart';
+import 'package:true_studentmgnt_mobapp/features/auth/data/models/student_model.dart';
+import 'package:true_studentmgnt_mobapp/features/auth/data/models/admin_model.dart';
 
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  // Sign up with email and password
-  Future<UserModel?> signUp({
+  Future<String> _createFirebaseUser(String email, String password) async {
+    try {
+      UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+      return userCredential.user!.uid;
+    } on FirebaseAuthException catch (e) {
+      throw _handleAuthError(e.code);
+    }
+  }
+
+  Future<void> signUpStudent({
     required String email,
     required String password,
     required String firstName,
     required String lastName,
     required String phone,
-    required String userType,
     String? middleName,
     String? studentNumber,
     String? address,
     String? course,
     DateTime? dob,
-    String? department,
-    String? jobTitle,
   }) async {
     try {
-      // Create user with email and password
-      UserCredential userCredential = await _auth
-          .createUserWithEmailAndPassword(email: email, password: password);
+      final uid = await _createFirebaseUser(email, password);
 
-      // Create user document in Firestore
-      UserModel user = UserModel(
-        uid: userCredential.user!.uid,
+      final student = StudentModel(
+        uid: uid,
         email: email,
         firstName: firstName,
         lastName: lastName,
         phone: phone,
-        userType: userType,
         middleName: middleName,
         studentNumber: studentNumber,
         address: address,
         course: course,
         dob: dob,
+      );
+
+      await _firestore.collection('students').doc(uid).set(student.toMap());
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<void> signUpAdmin({
+    required String email,
+    required String password,
+    required String firstName,
+    required String lastName,
+    required String phone,
+    String? middleName,
+    String? address,
+    DateTime? dob,
+    String? department,
+    String? jobTitle,
+  }) async {
+    try {
+      final uid = await _createFirebaseUser(email, password);
+
+      final admin = AdminModel(
+        uid: uid,
+        email: email,
+        firstName: firstName,
+        lastName: lastName,
+        phone: phone,
+        middleName: middleName,
+        address: address,
+        dob: dob,
         department: department,
         jobTitle: jobTitle,
       );
 
-      await _firestore
-          .collection('users')
-          .doc(userCredential.user!.uid)
-          .set(user.toMap());
-
-      return user;
-    } on FirebaseAuthException catch (e) {
-      throw _handleAuthError(e.code);
+      await _firestore.collection('admins').doc(uid).set(admin.toMap());
     } catch (e) {
-      throw 'An error occurred. Please try again.';
+      rethrow;
+    }
+  }
+
+  /// Login logic for both student and admin
+  Future<String> signIn({required String email, required String password}) async {
+    try {
+      final credential = await _auth.signInWithEmailAndPassword(email: email, password: password);
+      final uid = credential.user!.uid;
+
+      final studentDoc = await _firestore.collection('students').doc(uid).get();
+      if (studentDoc.exists) {
+        return 'student';
+      }
+
+      final adminDoc = await _firestore.collection('admins').doc(uid).get();
+      if (adminDoc.exists) {
+        return 'admin';
+      }
+
+      throw 'No role assigned to this account.';
+    } on FirebaseAuthException catch (e) {
+      throw _handleSignInError(e.code);
     }
   }
 
@@ -70,7 +121,22 @@ class AuthService {
       case 'weak-password':
         return 'The password is too weak.';
       default:
-        return 'An error occurred. Please try again.';
+        return 'An unknown error occurred. Please try again.';
+    }
+  }
+
+  String _handleSignInError(String code) {
+    switch (code) {
+      case 'user-not-found':
+        return 'No user found with this email.';
+      case 'wrong-password':
+        return 'Incorrect password.';
+      case 'invalid-email':
+        return 'Invalid email address.';
+      case 'user-disabled':
+        return 'This user account has been disabled.';
+      default:
+        return 'An unknown error occurred. Please try again.';
     }
   }
 }

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:true_studentmgnt_mobapp/utilities/constants.dart';
+import 'package:true_studentmgnt_mobapp/services/auth_service.dart';
+import 'package:true_studentmgnt_mobapp/config/constants.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class LoginScreen extends StatefulWidget {
   static const String id = 'login_screen';
@@ -15,6 +17,8 @@ class _LoginScreenState extends State<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _isPasswordVisible = false;
+  final _adminKeyController = TextEditingController();
+
   String _userType = 'student'; // Default
 
   @override
@@ -32,15 +36,95 @@ class _LoginScreenState extends State<LoginScreen> {
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
+    _adminKeyController.dispose(); // <-- Dispose this too
     super.dispose();
   }
 
-  void _handleLogin() {
-    if (_formKey.currentState!.validate()) {
-      // Here you would connect to Firebase Authcls
+Future<void> _handleLogin() async {
+  // First validate the form inputs
+  if (!_formKey.currentState!.validate()) {
+    return;
+  }
+
+  try {
+    // Show loading indicator
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(
+        child: CircularProgressIndicator(),
+      ),
+    );
+
+    final isAdmin = _userType == 'admin';
+    final email = _emailController.text.trim();
+    final password = _passwordController.text.trim();
+
+    // Verify admin key if user is logging in as admin
+    if (isAdmin) {
+      final adminKey = _adminKeyController.text.trim();
+      if (adminKey != '122333') {
+        // Close loading dialog
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Invalid admin key. Please try again.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return;
+      }
+    }
+
+    // Get the AuthService instance
+    final authService = AuthService();
+
+    // Sign in using the authService
+    final userRole = await authService.signIn(
+      email: email,
+      password: password,
+    );
+
+    // Close loading dialog
+    Navigator.pop(context);
+
+    // Verify the returned role matches the expected role
+    if ((isAdmin && userRole != 'admin') || (!isAdmin && userRole != 'student')) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            isAdmin
+                ? 'This account is not registered as an admin.'
+                : 'This account is not registered as a student.',
+          ),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    // Navigate to the appropriate dashboard
+    if (isAdmin) {
+      Navigator.pushReplacementNamed(context, 'admin_dashboard');
+    } else {
+      Navigator.pushReplacementNamed(context, 'student_dashboard');
+    }
+  } catch (e) {
+    // Close loading dialog if it's open
+    if (Navigator.canPop(context)) {
       Navigator.pop(context);
     }
+
+    // Display error message
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(e.toString()),
+        backgroundColor: Colors.red,
+      ),
+    );
   }
+}
+
 
   @override
   Widget build(BuildContext context) {
@@ -306,41 +390,42 @@ class _LoginScreenState extends State<LoginScreen> {
                             if (isAdmin)
                               Column(
                                 children: [
-                                  TextFormField(
-                                    decoration: InputDecoration(
-                                      labelText: 'Admin Security Key',
-                                      hintText: 'Enter your admin access key',
-                                      prefixIcon: Icon(
-                                        Icons.security,
-                                        color: primaryColor,
-                                      ),
-                                      enabledBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(
-                                          kDefaultBorderRadius,
-                                        ),
-                                        borderSide: BorderSide(
-                                          color: Colors.grey.shade300,
-                                        ),
-                                      ),
-                                      focusedBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(
-                                          kDefaultBorderRadius,
-                                        ),
-                                        borderSide: BorderSide(
-                                          color: primaryColor,
-                                          width: 2,
-                                        ),
-                                      ),
-                                      filled: true,
-                                      fillColor: Colors.grey.shade50,
+                                 TextFormField(
+                                  controller: _adminKeyController,  // Add this line
+                                  decoration: InputDecoration(
+                                    labelText: 'Admin Security Key',
+                                    hintText: 'Enter your admin access key',
+                                    prefixIcon: Icon(
+                                      Icons.security,
+                                      color: primaryColor,
                                     ),
-                                    validator: (value) {
-                                      if (value == null || value.isEmpty) {
-                                        return 'Please enter your admin key';
-                                      }
-                                      return null;
-                                    },
+                                    enabledBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(
+                                        kDefaultBorderRadius,
+                                      ),
+                                      borderSide: BorderSide(
+                                        color: Colors.grey.shade300,
+                                      ),
+                                    ),
+                                    focusedBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(
+                                        kDefaultBorderRadius,
+                                      ),
+                                      borderSide: BorderSide(
+                                        color: primaryColor,
+                                        width: 2,
+                                      ),
+                                    ),
+                                    filled: true,
+                                    fillColor: Colors.grey.shade50,
                                   ),
+                                  validator: (value) {
+                                    if (value == null || value.isEmpty) {
+                                      return 'Please enter your admin key';
+                                    }
+                                    return null;
+                                  },
+                                ),
                                   const SizedBox(height: kDefaultPadding),
                                 ],
                               ),

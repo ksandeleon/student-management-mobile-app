@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:true_studentmgnt_mobapp/utilities/constants.dart';
-import 'package:true_studentmgnt_mobapp/frontend/login_screen.dart';
-import 'package:true_studentmgnt_mobapp/frontend/signup_screen.dart';
+import 'package:true_studentmgnt_mobapp/config/constants.dart';
+import 'package:true_studentmgnt_mobapp/features/auth/presentation/screens/login_screen.dart';
+import 'package:true_studentmgnt_mobapp/features/auth/presentation/screens/signup_screen.dart';
 
 class WelcomeScreen extends StatelessWidget {
   static const String id = 'welcome_screen';

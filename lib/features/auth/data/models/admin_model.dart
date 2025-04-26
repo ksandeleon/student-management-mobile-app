@@ -1,32 +1,25 @@
-// models/user_model.dart
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-class UserModel {
+class AdminModel {
   final String uid;
-  final String email;
   final String firstName;
+  final String? middleName;
   final String lastName;
   final String phone;
-  final String userType; // 'student' or 'admin'
-  final String? middleName;
-  final String? studentNumber;
+  final String email;
   final String? address;
-  final String? course;
   final DateTime? dob;
   final String? department;
   final String? jobTitle;
 
-  UserModel({
+  AdminModel({
     required this.uid,
     required this.email,
     required this.firstName,
     required this.lastName,
     required this.phone,
-    required this.userType,
     this.middleName,
-    this.studentNumber,
     this.address,
-    this.course,
     this.dob,
     this.department,
     this.jobTitle,
@@ -40,11 +33,8 @@ class UserModel {
       'firstName': firstName,
       'lastName': lastName,
       'phone': phone,
-      'userType': userType,
       'middleName': middleName,
-      'studentNumber': studentNumber,
       'address': address,
-      'course': course,
       'dob': dob?.toIso8601String(),
       'department': department,
       'jobTitle': jobTitle,
@@ -53,18 +43,15 @@ class UserModel {
   }
 
   // Create from Firestore document
-  factory UserModel.fromMap(Map<String, dynamic> map) {
-    return UserModel(
+  factory AdminModel.fromMap(Map<String, dynamic> map) {
+    return AdminModel(
       uid: map['uid'],
       email: map['email'],
       firstName: map['firstName'],
       lastName: map['lastName'],
       phone: map['phone'],
-      userType: map['userType'],
       middleName: map['middleName'],
-      studentNumber: map['studentNumber'],
       address: map['address'],
-      course: map['course'],
       dob: map['dob'] != null ? DateTime.parse(map['dob']) : null,
       department: map['department'],
       jobTitle: map['jobTitle'],
