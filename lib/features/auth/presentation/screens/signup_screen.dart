@@ -3,7 +3,6 @@ import 'package:intl/intl.dart';
 
 import 'package:true_studentmgnt_mobapp/config/constants.dart';
 import 'package:true_studentmgnt_mobapp/services/auth_service.dart';
-import 'package:true_studentmgnt_mobapp/features/auth/data/models/user_model.dart';
 
 class SignupScreen extends StatefulWidget {
   static const String id = 'signup_screen';

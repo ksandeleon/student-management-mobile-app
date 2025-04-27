@@ -22,6 +22,8 @@ class AppTheme {
       onError: Colors.white,
       surface: Colors.white,
       onSurface: Colors.black87,
+      background: Colors.white,
+      onBackground: Colors.black87,
     ),
     // AppBar Theme
     appBarTheme: const AppBarTheme(
@@ -61,6 +63,12 @@ class AppTheme {
         borderSide: const BorderSide(color: accentAction),
       ),
       labelStyle: const TextStyle(color: Colors.grey),
+      hintStyle: TextStyle(color: Colors.grey[700]),
+      // Ensure text is clearly visible against the input background
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8),
+        borderSide: BorderSide(color: Colors.grey[300]!),
+      ),
     ),
     // Text Theme
     textTheme: const TextTheme(
@@ -94,7 +102,8 @@ class AppTheme {
       onSecondary: Colors.white,
       error: Colors.redAccent,
       onError: Colors.white,
-      surface: Color(0xFF2C1446), // Slightly lighter than primary for cards
+      // Lighter surface for better contrast with text
+      surface: Color(0xFF3A1D5A),
       onSurface: Colors.white,
     ),
     // AppBar Theme
@@ -125,16 +134,24 @@ class AppTheme {
     // Input Decoration Theme
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
-      fillColor: secondarySurface.withOpacity(0.5),
+      // Lighter background for better contrast with dark text
+      fillColor: const Color(0xFF6A2D72),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(8),
         borderSide: BorderSide.none,
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(8),
-        borderSide: const BorderSide(color: accentAction),
+        borderSide: const BorderSide(color: accentAction, width: 2),
       ),
-      labelStyle: const TextStyle(color: Colors.white70),
+      // Ensure high contrast between label/hint text and background
+      labelStyle: const TextStyle(color: Colors.white),
+      hintStyle: const TextStyle(color: Colors.white70),
+      // Better border visibility in dark mode
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8),
+        borderSide: const BorderSide(color: Colors.white24),
+      ),
     ),
     // Text Theme
     textTheme: const TextTheme(
@@ -148,7 +165,7 @@ class AppTheme {
       ),
       titleLarge: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
       bodyLarge: TextStyle(color: Colors.white),
-      bodyMedium: TextStyle(color: Colors.white70),
+      bodyMedium: TextStyle(color: Colors.white),
     ),
   );
 }
