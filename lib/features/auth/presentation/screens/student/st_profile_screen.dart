@@ -7,6 +7,9 @@ class StudentProfileScreen extends StatefulWidget {
   final StudentModel student;
   final Function(StudentModel) onSubmitChanges;
 
+  static const String id = 'stprofile_screen';
+
+
   const StudentProfileScreen({
     Key? key,
     required this.student,
