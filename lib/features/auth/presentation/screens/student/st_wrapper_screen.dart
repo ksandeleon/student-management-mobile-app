@@ -1,13 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:provider/provider.dart';
+
 import 'st_classes_screen.dart';
 import 'st_profile_screen.dart';
 import 'st_schedule_screen.dart';
 
+import '../../../data/models/student_model.dart';
+
 class StudentWrapper extends StatefulWidget {
   static const String id = 'stwrapper_screen';
-  final Student student;
 
-  const StudentWrapper({Key? key, required this.student}) : super(key: key);
+  const StudentWrapper({Key? key}) : super(key: key);
 
   @override
   State<StudentWrapper> createState() => _StudentWrapperState();
@@ -16,23 +21,33 @@ class StudentWrapper extends StatefulWidget {
 class _StudentWrapperState extends State<StudentWrapper> {
   int _selectedIndex = 0;
   late List<Widget> _pages;
+  late StudentModel student;
+  bool _initialized = false;
+
 
   @override
-  void initState() {
-    super.initState();
-    _pages = [
-      StClassesScreen(),
-      StScheduleScreen(),
-      StudentProfileScreen(
-        student: widget.student,
-        onSubmitChanges: _handleProfileChanges,
-      ),
-    ];
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_initialized) {
+      student = Provider.of<StudentModel>(context, listen: false);
+      _pages = [
+        StClassesScreen(),
+        StScheduleScreen(),
+        StudentProfileScreen(
+          student: student,
+          onSubmitChanges: _handleProfileChanges,
+        ),
+      ];
+      _initialized = true;
+    }
   }
 
-  void _handleProfileChanges(Student updatedStudent) {
-    // Handle any profile updates if needed
-    // This would be passed to the StudentProfileScreen
+  void _handleProfileChanges(StudentModel updatedStudent) {
+    // You can update the local student model if needed
+    setState(() {
+      student = updatedStudent;
+      // You can also update _pages if needed
+    });
   }
 
   void _onItemTapped(int index) {

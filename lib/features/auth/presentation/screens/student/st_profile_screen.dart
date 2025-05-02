@@ -9,7 +9,6 @@ class StudentProfileScreen extends StatefulWidget {
 
   static const String id = 'stprofile_screen';
 
-
   const StudentProfileScreen({
     Key? key,
     required this.student,
@@ -35,6 +34,7 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
   late TextEditingController _addressController;
   late TextEditingController _courseController;
   DateTime? _selectedDate;
+
 
   @override
   void initState() {
@@ -63,6 +63,7 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
     );
   }
 
+
   @override
   void dispose() {
     // Dispose controllers
@@ -76,6 +77,7 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
     _courseController.dispose();
     super.dispose();
   }
+
 
   void _toggleEditMode() {
     setState(() {
@@ -94,6 +96,7 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
       }
     });
   }
+
 
   void _submitChanges() {
     // Check which fields have changed
@@ -164,6 +167,7 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
       _editedStudent = updatedStudent;
     });
   }
+
 
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
