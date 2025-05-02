@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:true_studentmgnt_mobapp/features/auth/presentation/screens/student/st_profile_screen.dart';
 import 'package:true_studentmgnt_mobapp/features/auth/presentation/screens/student/st_schedule_screen.dart';
+import 'package:true_studentmgnt_mobapp/features/auth/presentation/screens/student/st_wrapper_screen.dart';
 import 'firebase/firebase_options.dart';
 
 import 'package:true_studentmgnt_mobapp/features/auth/presentation/screens/login_screen.dart';
@@ -27,14 +29,19 @@ class MyApp extends StatelessWidget {
       darkTheme: AppTheme.darkTheme,
       themeMode: ThemeMode.system,
 
-      // initialRoute: 'welcome_screen',
-      initialRoute: 'stschedule_screen',
+      initialRoute: 'welcome_screen',
+      // initialRoute: 'stschedule_screen',
       routes: {
         WelcomeScreen.id: (context) => WelcomeScreen(), // id = "welcome_screen"
         LoginScreen.id: (context) => LoginScreen(), //id = "login_screen"
         SignupScreen.id: (context) => SignupScreen(), //id = "signup_screen"
+
+        StudentWrapper.id (context) => StudentWrapper(student: student), //id = stwrapper_screen
+
+
         StClassesScreen.id: (context) => StClassesScreen(), // id = "stclasses_screen"
         StScheduleScreen.id: (context) => StScheduleScreen(), // id = "stschedule_screen"
+        StudentProfileScreen.id: (context) => StudentProfileScreen(student: student, onSubmitChanges: onSubmitChanges), //stprofile_screen
       },
     );
   }
