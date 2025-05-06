@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
 
-class StudentModel {
+class StudentModel extends ChangeNotifier {
   final String uid;
   final String email;
   final String firstName;
@@ -42,19 +43,19 @@ class StudentModel {
     };
   }
 
-  // Create from Firestore document
-  factory StudentModel.fromMap(Map<String, dynamic> map) {
-    return StudentModel(
-      uid: map['uid'],
-      email: map['email'],
-      firstName: map['firstName'],
-      lastName: map['lastName'],
-      phone: map['phone'],
-      middleName: map['middleName'],
-      studentNumber: map['studentNumber'],
-      address: map['address'],
-      course: map['course'],
-      dob: map['dob'] != null ? DateTime.parse(map['dob']) : null,
-    );
-  }
+factory StudentModel.fromMap(Map map, {required String docId}) {
+  return StudentModel(
+    uid: docId,
+    email: map['email'],
+    firstName: map['firstName'],
+    lastName: map['lastName'],
+    phone: map['phone'],
+    middleName: map['middleName'],
+    studentNumber: map['studentNumber'],
+    address: map['address'],
+    course: map['course'],
+    dob: map['dob'] != null ? DateTime.parse(map['dob']) : null,
+  );
+}
+
 }

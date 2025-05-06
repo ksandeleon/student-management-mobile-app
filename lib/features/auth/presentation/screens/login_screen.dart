@@ -1,7 +1,11 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:true_studentmgnt_mobapp/features/auth/data/models/student_model.dart';
+import 'package:true_studentmgnt_mobapp/features/auth/presentation/screens/student/st_wrapper_screen.dart';
 import 'package:true_studentmgnt_mobapp/services/auth_service.dart';
 import 'package:true_studentmgnt_mobapp/config/constants.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 
 class LoginScreen extends StatefulWidget {
   static const String id = 'login_screen';
@@ -45,15 +49,12 @@ Future<void> _handleLogin() async {
   if (!_formKey.currentState!.validate()) {
     return;
   }
-
   try {
     // Show loading indicator
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => const Center(
-        child: CircularProgressIndicator(),
-      ),
+      builder: (context) => const Center(child: CircularProgressIndicator()),
     );
 
     final isAdmin = _userType == 'admin';
@@ -89,7 +90,8 @@ Future<void> _handleLogin() async {
     Navigator.pop(context);
 
     // Verify the returned role matches the expected role
-    if ((isAdmin && userRole != 'admin') || (!isAdmin && userRole != 'student')) {
+    if ((isAdmin && userRole != 'admin') ||
+        (!isAdmin && userRole != 'student')) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
@@ -107,20 +109,58 @@ Future<void> _handleLogin() async {
     if (isAdmin) {
       Navigator.pushReplacementNamed(context, 'admin_dashboard');
     } else {
-      Navigator.pushReplacementNamed(context, 'student_dashboard');
+      // For student login, we need to:
+      // 1. Get the current Firebase user
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        // 2. Fetch the student data from Firestore
+        final studentDoc = await FirebaseFirestore.instance
+            .collection('students')
+            .doc(user.uid)
+            .get();
+
+        if (studentDoc.exists) {
+          // 3. Create a StudentModel from the Firestore data
+          final studentModel = StudentModel.fromMap(
+            studentDoc.data() as Map<String, dynamic>,
+            docId: user.uid,
+          );
+
+          // 4. Navigate to StudentWrapper with the StudentModel in a Provider
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => ChangeNotifierProvider.value(
+                value: studentModel,
+                child: const StudentWrapper(),
+              ),
+            ),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Student data not found. Please contact support.'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Authentication error. Please try again.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   } catch (e) {
     // Close loading dialog if it's open
     if (Navigator.canPop(context)) {
       Navigator.pop(context);
     }
-
     // Display error message
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(e.toString()),
-        backgroundColor: Colors.red,
-      ),
+      SnackBar(content: Text(e.toString()), backgroundColor: Colors.red),
     );
   }
 }
@@ -390,42 +430,43 @@ Future<void> _handleLogin() async {
                             if (isAdmin)
                               Column(
                                 children: [
-                                 TextFormField(
-                                  controller: _adminKeyController,  // Add this line
-                                  decoration: InputDecoration(
-                                    labelText: 'Admin Security Key',
-                                    hintText: 'Enter your admin access key',
-                                    prefixIcon: Icon(
-                                      Icons.security,
-                                      color: primaryColor,
-                                    ),
-                                    enabledBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(
-                                        kDefaultBorderRadius,
-                                      ),
-                                      borderSide: BorderSide(
-                                        color: Colors.grey.shade300,
-                                      ),
-                                    ),
-                                    focusedBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(
-                                        kDefaultBorderRadius,
-                                      ),
-                                      borderSide: BorderSide(
+                                  TextFormField(
+                                    controller:
+                                        _adminKeyController, // Add this line
+                                    decoration: InputDecoration(
+                                      labelText: 'Admin Security Key',
+                                      hintText: 'Enter your admin access key',
+                                      prefixIcon: Icon(
+                                        Icons.security,
                                         color: primaryColor,
-                                        width: 2,
                                       ),
+                                      enabledBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(
+                                          kDefaultBorderRadius,
+                                        ),
+                                        borderSide: BorderSide(
+                                          color: Colors.grey.shade300,
+                                        ),
+                                      ),
+                                      focusedBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(
+                                          kDefaultBorderRadius,
+                                        ),
+                                        borderSide: BorderSide(
+                                          color: primaryColor,
+                                          width: 2,
+                                        ),
+                                      ),
+                                      filled: true,
+                                      fillColor: Colors.grey.shade50,
                                     ),
-                                    filled: true,
-                                    fillColor: Colors.grey.shade50,
+                                    validator: (value) {
+                                      if (value == null || value.isEmpty) {
+                                        return 'Please enter your admin key';
+                                      }
+                                      return null;
+                                    },
                                   ),
-                                  validator: (value) {
-                                    if (value == null || value.isEmpty) {
-                                      return 'Please enter your admin key';
-                                    }
-                                    return null;
-                                  },
-                                ),
                                   const SizedBox(height: kDefaultPadding),
                                 ],
                               ),

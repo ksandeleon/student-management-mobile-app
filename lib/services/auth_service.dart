@@ -5,7 +5,6 @@ import 'package:provider/provider.dart';
 
 import 'package:true_studentmgnt_mobapp/features/auth/data/models/student_model.dart';
 import 'package:true_studentmgnt_mobapp/features/auth/data/models/admin_model.dart';
-import 'package:true_studentmgnt_mobapp/features/auth/data/models/student_model.dart';
 import 'package:true_studentmgnt_mobapp/features/auth/presentation/screens/student/st_wrapper_screen.dart';
 
 class AuthService {
@@ -168,65 +167,65 @@ class AuthService {
     await _auth.signOut();
   }
 
-  // Improved login with navigation
-  Future<void> handleLoginAndNavigation({
-    required String email,
-    required String password,
-    required BuildContext context,
-  }) async {
-    try {
-      // Show loading indicator
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (context) => const Center(child: CircularProgressIndicator()),
-      );
+//   // Improved login with navigation
+//   Future<void> handleLoginAndNavigation({
+//     required String email,
+//     required String password,
+//     required BuildContext context,
+//   }) async {
+//     try {
+//       // Show loading indicator
+//       showDialog(
+//         context: context,
+//         barrierDismissible: false,
+//         builder: (context) => const Center(child: CircularProgressIndicator()),
+//       );
 
-      final role = await signIn(email: email, password: password);
-      final uid = _auth.currentUser!.uid;
+//       final role = await signIn(email: email, password: password);
+//       final uid = _auth.currentUser!.uid;
 
-      if (role == 'student') {
-        final doc = await _firestore.collection('students').doc(uid).get();
-        if (!doc.exists) throw 'Student record not found';
+//       if (role == 'student') {
+//         final doc = await _firestore.collection('students').doc(uid).get();
+//         if (!doc.exists) throw 'Student record not found';
 
-        final student = StudentModel.fromMap(doc.data()!);
+//         final student = StudentModel.fromMap(doc.data()!);
 
-        // Remove loading indicator
-        Navigator.of(context).pop();
-        print("student login success");
-
-
-
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(
-            builder: (context) => Provider<StudentModel>.value(
-              value: student,
-              child: const StudentWrapper(),
-            ),
-          ),
-        );
+//         // Remove loading indicator
+//         Navigator.of(context).pop();
+//         print("student login success");
 
 
 
+//         Navigator.of(context).pushReplacement(
+//           MaterialPageRoute(
+//             builder: (context) => Provider<StudentModel>.value(
+//               value: student,
+//               child: const StudentWrapper(),
+//             ),
+//           ),
+//         );
 
-      } else if (role == 'admin') {
-        final doc = await _firestore.collection('admins').doc(uid).get();
-        if (!doc.exists) throw 'Admin record not found';
 
-        // Navigate to admin screen
-        print("admin loggin success");
-        // Navigator.of(context).pushReplacementNamed(AdminDashboardScreen.id);
-      } else {
-        await _auth.signOut();
-        throw 'Unknown user role';
-      }
-    } catch (e) {
-      // Ensure loading dialog is dismissed
-      Navigator.of(context).pop();
 
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(e.toString())));
-    }
-  }
+
+//       } else if (role == 'admin') {
+//         final doc = await _firestore.collection('admins').doc(uid).get();
+//         if (!doc.exists) throw 'Admin record not found';
+
+//         // Navigate to admin screen
+//         print("admin loggin success");
+//         // Navigator.of(context).pushReplacementNamed(AdminDashboardScreen.id);
+//       } else {
+//         await _auth.signOut();
+//         throw 'Unknown user role';
+//       }
+//     } catch (e) {
+//       // Ensure loading dialog is dismissed
+//       Navigator.of(context).pop();
+
+//       ScaffoldMessenger.of(
+//         context,
+//       ).showSnackBar(SnackBar(content: Text(e.toString())));
+//     }
+//   }
 }
