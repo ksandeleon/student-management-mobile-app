@@ -40,7 +40,7 @@ class _LoginScreenState extends State<LoginScreen> {
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
-    _adminKeyController.dispose(); // <-- Dispose this too
+    _adminKeyController.dispose();
     super.dispose();
   }
 
@@ -185,8 +185,8 @@ Future<void> _handleLogin() async {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
+              theme.colorScheme.secondary,
               theme.colorScheme.primary,
-              theme.colorScheme.primary.withOpacity(0.8),
             ],
           ),
         ),
@@ -207,7 +207,7 @@ Future<void> _handleLogin() async {
                         onPressed: () => Navigator.pop(context),
                       ),
                       Text(
-                        'Login',
+                        'Student Form',
                         style: TextStyle(
                           color: theme.colorScheme.onPrimary,
                           fontSize: 20,
@@ -278,6 +278,7 @@ Future<void> _handleLogin() async {
                               keyboardType: TextInputType.emailAddress,
                               decoration: InputDecoration(
                                 labelText: 'Email',
+                                  labelStyle: TextStyle(color: Colors.grey), // <-- Label color
                                 hintText:
                                     isAdmin
                                         ? 'admin@school.edu'
@@ -342,6 +343,7 @@ Future<void> _handleLogin() async {
                               obscureText: !_isPasswordVisible,
                               decoration: InputDecoration(
                                 labelText: 'Password',
+                                  labelStyle: TextStyle(color: Colors.grey), // <-- Label color
                                 hintText: '••••••••',
                                 prefixIcon: Icon(
                                   Icons.lock,
@@ -435,6 +437,7 @@ Future<void> _handleLogin() async {
                                         _adminKeyController, // Add this line
                                     decoration: InputDecoration(
                                       labelText: 'Admin Security Key',
+                                        labelStyle: TextStyle(color: Colors.grey), // <-- Label color
                                       hintText: 'Enter your admin access key',
                                       prefixIcon: Icon(
                                         Icons.security,
