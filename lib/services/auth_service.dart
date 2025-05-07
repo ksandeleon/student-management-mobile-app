@@ -1,11 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 
 import 'package:true_studentmgnt_mobapp/features/auth/data/models/student_model.dart';
 import 'package:true_studentmgnt_mobapp/features/auth/data/models/admin_model.dart';
-import 'package:true_studentmgnt_mobapp/features/auth/presentation/screens/student/st_wrapper_screen.dart';
 
 class AuthService {
   final FirebaseAuth _auth;
