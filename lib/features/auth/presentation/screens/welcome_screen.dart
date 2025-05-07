@@ -23,68 +23,66 @@ class WelcomeScreen extends StatelessWidget {
           ),
         ),
         child: SafeArea(
-          child: SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.all(kDefaultPadding),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const SizedBox(height: 60),
-                  // Logo and App Name
-                  Icon(
-                    Icons.menu_book_rounded,
-                    size: 80,
+          child: Padding(
+            padding: const EdgeInsets.all(kDefaultPadding),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const SizedBox(height: 60),
+                // Logo and App Name
+                Icon(
+                  Icons.menu_book_rounded,
+                  size: 80,
+                  color: theme.colorScheme.onPrimary,
+                ),
+                const SizedBox(height: kDefaultPadding),
+                Text(
+                  'Go Classroom',
+                  style: theme.textTheme.headlineLarge?.copyWith(
                     color: theme.colorScheme.onPrimary,
+                    fontSize: 36,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 1.2,
                   ),
-                  const SizedBox(height: kDefaultPadding),
-                  Text(
-                    'Go Student',
-                    style: theme.textTheme.headlineLarge?.copyWith(
-                      color: theme.colorScheme.onPrimary,
-                      fontSize: 36,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 1.2,
-                    ),
+                ),
+
+                // Tagline
+                const SizedBox(height: kSmallPadding),
+                Text(
+                  'smart mobile classroom app',
+                  style: theme.textTheme.bodyLarge?.copyWith(
+                    color: theme.colorScheme.onPrimary,
+                    fontSize: 16,
+                    letterSpacing: 0.5,
                   ),
+                ),
 
-                  // Tagline
-                  const SizedBox(height: kSmallPadding),
-                  Text(
-                    'smart simple classroom app',
-                    style: theme.textTheme.bodyLarge?.copyWith(
-                      color: theme.colorScheme.onPrimary.withOpacity(0.9),
-                      fontSize: 16,
-                      letterSpacing: 0.5,
-                    ),
-                  ),
+                const SizedBox(height: 60),
 
-                  const SizedBox(height: 60),
+                // Student Card
+                _buildUserCard(
+                  context,
+                  'Student',
+                  Icons.school,
+                  'student-icon',
+                  kComplementaryColor,
+                  'student',
+                ),
 
-                  // Student Card
-                  _buildUserCard(
-                    context,
-                    'Student',
-                    Icons.school,
-                    'student-icon',
-                    kComplementaryColor,
-                    'student',
-                  ),
+                const SizedBox(height: 20),
 
-                  const SizedBox(height: 20),
+                // Admin Card
+                _buildUserCard(
+                  context,
+                  'Admin',
+                  Icons.admin_panel_settings,
+                  'admin-icon',
+                  kAccentColor,
+                  'admin',
+                ),
 
-                  // Admin Card
-                  _buildUserCard(
-                    context,
-                    'Admin',
-                    Icons.admin_panel_settings,
-                    'admin-icon',
-                    kAccentColor,
-                    'admin',
-                  ),
-
-                  const SizedBox(height: 40),
-                ],
-              ),
+                const SizedBox(height: 40),
+              ],
             ),
           ),
         ),
@@ -109,7 +107,7 @@ class WelcomeScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(kLargeBorderRadius),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.2),
+            color: Colors.black,
             blurRadius: 15,
             offset: const Offset(0, 8),
           ),

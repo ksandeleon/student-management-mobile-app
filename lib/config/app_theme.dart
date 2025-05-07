@@ -22,8 +22,6 @@ class AppTheme {
       onError: Colors.white,
       surface: Colors.white,
       onSurface: Colors.black87,
-      background: Colors.white,
-      onBackground: Colors.black87,
     ),
     // AppBar Theme
     appBarTheme: const AppBarTheme(
@@ -88,6 +86,8 @@ class AppTheme {
       bodyMedium: TextStyle(color: Colors.black87),
     ),
   );
+
+  
 
   // Dark Theme
   static ThemeData darkTheme = ThemeData(

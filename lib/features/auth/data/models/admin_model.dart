@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 
-class AdminModel {
+class AdminModel extends ChangeNotifier{
   final String uid;
   final String firstName;
   final String? middleName;
