@@ -44,127 +44,130 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
-Future<void> _handleLogin() async {
-  // First validate the form inputs
-  if (!_formKey.currentState!.validate()) {
-    return;
-  }
-  try {
-    // Show loading indicator
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => const Center(child: CircularProgressIndicator()),
-    );
+  Future<void> _handleLogin() async {
+    // First validate the form inputs
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+    try {
+      // Show loading indicator
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const Center(child: CircularProgressIndicator()),
+      );
 
-    final isAdmin = _userType == 'admin';
-    final email = _emailController.text.trim();
-    final password = _passwordController.text.trim();
+      final isAdmin = _userType == 'admin';
+      final email = _emailController.text.trim();
+      final password = _passwordController.text.trim();
 
-    // Verify admin key if user is logging in as admin
-    if (isAdmin) {
-      final adminKey = _adminKeyController.text.trim();
-      if (adminKey != '122333') {
-        // Close loading dialog
-        Navigator.pop(context);
+      // Verify admin key if user is logging in as admin
+      if (isAdmin) {
+        final adminKey = _adminKeyController.text.trim();
+        if (adminKey != '122333') {
+          // Close loading dialog
+          Navigator.pop(context);
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Invalid admin key. Please try again.'),
+              backgroundColor: Colors.red,
+            ),
+          );
+          return;
+        }
+      }
+
+      // Get the AuthService instance
+      final authService = AuthService();
+
+      // Sign in using the authService
+      final userRole = await authService.signIn(
+        email: email,
+        password: password,
+      );
+
+      // Close loading dialog
+      Navigator.pop(context);
+
+      // Verify the returned role matches the expected role
+      if ((isAdmin && userRole != 'admin') ||
+          (!isAdmin && userRole != 'student')) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Invalid admin key. Please try again.'),
+          SnackBar(
+            content: Text(
+              isAdmin
+                  ? 'This account is not registered as an admin.'
+                  : 'This account is not registered as a student.',
+            ),
             backgroundColor: Colors.red,
           ),
         );
         return;
       }
-    }
 
-    // Get the AuthService instance
-    final authService = AuthService();
+      // Navigate to the appropriate dashboard
+      if (isAdmin) {
+        Navigator.pushReplacementNamed(context, 'admin_dashboard');
+      } else {
+        // For student login, we need to:
+        // 1. Get the current Firebase user
+        final user = FirebaseAuth.instance.currentUser;
+        if (user != null) {
+          // 2. Fetch the student data from Firestore
+          final studentDoc =
+              await FirebaseFirestore.instance
+                  .collection('students')
+                  .doc(user.uid)
+                  .get();
 
-    // Sign in using the authService
-    final userRole = await authService.signIn(
-      email: email,
-      password: password,
-    );
+          if (studentDoc.exists) {
+            // 3. Create a StudentModel from the Firestore data
+            final studentModel = StudentModel.fromMap(
+              studentDoc.data() as Map<String, dynamic>,
+              docId: user.uid,
+            );
 
-    // Close loading dialog
-    Navigator.pop(context);
-
-    // Verify the returned role matches the expected role
-    if ((isAdmin && userRole != 'admin') ||
-        (!isAdmin && userRole != 'student')) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            isAdmin
-                ? 'This account is not registered as an admin.'
-                : 'This account is not registered as a student.',
-          ),
-          backgroundColor: Colors.red,
-        ),
-      );
-      return;
-    }
-
-    // Navigate to the appropriate dashboard
-    if (isAdmin) {
-      Navigator.pushReplacementNamed(context, 'admin_dashboard');
-    } else {
-      // For student login, we need to:
-      // 1. Get the current Firebase user
-      final user = FirebaseAuth.instance.currentUser;
-      if (user != null) {
-        // 2. Fetch the student data from Firestore
-        final studentDoc = await FirebaseFirestore.instance
-            .collection('students')
-            .doc(user.uid)
-            .get();
-
-        if (studentDoc.exists) {
-          // 3. Create a StudentModel from the Firestore data
-          final studentModel = StudentModel.fromMap(
-            studentDoc.data() as Map<String, dynamic>,
-            docId: user.uid,
-          );
-
-          // 4. Navigate to StudentWrapper with the StudentModel in a Provider
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(
-              builder: (context) => ChangeNotifierProvider.value(
-                value: studentModel,
-                child: const StudentWrapper(),
+            // 4. Navigate to StudentWrapper with the StudentModel in a Provider
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder:
+                    (context) => ChangeNotifierProvider.value(
+                      value: studentModel,
+                      child: const StudentWrapper(),
+                    ),
               ),
-            ),
-          );
+            );
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text(
+                  'Student data not found. Please contact support.',
+                ),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('Student data not found. Please contact support.'),
+              content: Text('Authentication error. Please try again.'),
               backgroundColor: Colors.red,
             ),
           );
         }
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Authentication error. Please try again.'),
-            backgroundColor: Colors.red,
-          ),
-        );
       }
+    } catch (e) {
+      // Close loading dialog if it's open
+      if (Navigator.canPop(context)) {
+        Navigator.pop(context);
+      }
+      // Display error message
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.toString()), backgroundColor: Colors.red),
+      );
     }
-  } catch (e) {
-    // Close loading dialog if it's open
-    if (Navigator.canPop(context)) {
-      Navigator.pop(context);
-    }
-    // Display error message
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(e.toString()), backgroundColor: Colors.red),
-    );
   }
-}
-
 
   @override
   Widget build(BuildContext context) {
@@ -184,10 +187,7 @@ Future<void> _handleLogin() async {
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [
-              theme.colorScheme.secondary,
-              theme.colorScheme.primary,
-            ],
+            colors: [theme.colorScheme.secondary, theme.colorScheme.primary],
           ),
         ),
         child: SafeArea(
@@ -207,7 +207,7 @@ Future<void> _handleLogin() async {
                         onPressed: () => Navigator.pop(context),
                       ),
                       Text(
-                        'Student Form',
+                        'SIGN IN',
                         style: TextStyle(
                           color: theme.colorScheme.onPrimary,
                           fontSize: 20,
@@ -246,7 +246,7 @@ Future<void> _handleLogin() async {
                   Text(
                     'Sign in as $userTypeText',
                     style: theme.textTheme.bodyLarge?.copyWith(
-                      color: theme.colorScheme.onPrimary.withOpacity(0.8),
+                      color: theme.colorScheme.onPrimary,
                     ),
                   ),
 
@@ -260,7 +260,7 @@ Future<void> _handleLogin() async {
                       borderRadius: BorderRadius.circular(kLargeBorderRadius),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.2),
+                          color: Colors.black,
                           blurRadius: 15,
                           offset: const Offset(0, 8),
                         ),
@@ -276,9 +276,14 @@ Future<void> _handleLogin() async {
                             TextFormField(
                               controller: _emailController,
                               keyboardType: TextInputType.emailAddress,
+                              style: TextStyle(
+                                color: Colors.black,
+                              ), // <-- This sets the input text color
                               decoration: InputDecoration(
                                 labelText: 'Email',
-                                  labelStyle: TextStyle(color: Colors.grey), // <-- Label color
+                                labelStyle: TextStyle(
+                                  color: Colors.grey,
+                                ), // <-- Label color
                                 hintText:
                                     isAdmin
                                         ? 'admin@school.edu'
@@ -341,9 +346,14 @@ Future<void> _handleLogin() async {
                             TextFormField(
                               controller: _passwordController,
                               obscureText: !_isPasswordVisible,
+                              style: TextStyle(
+                                color: Colors.black,
+                              ), // <-- This sets the input text color
                               decoration: InputDecoration(
                                 labelText: 'Password',
-                                  labelStyle: TextStyle(color: Colors.grey), // <-- Label color
+                                labelStyle: TextStyle(
+                                  color: Colors.grey,
+                                ), // <-- Label color
                                 hintText: '••••••••',
                                 prefixIcon: Icon(
                                   Icons.lock,
@@ -435,9 +445,14 @@ Future<void> _handleLogin() async {
                                   TextFormField(
                                     controller:
                                         _adminKeyController, // Add this line
+                                    style: TextStyle(
+                                      color: Colors.black,
+                                    ), // <-- This sets the input text color
                                     decoration: InputDecoration(
                                       labelText: 'Admin Security Key',
-                                        labelStyle: TextStyle(color: Colors.grey), // <-- Label color
+                                      labelStyle: TextStyle(
+                                        color: Colors.grey,
+                                      ), // <-- Label color
                                       hintText: 'Enter your admin access key',
                                       prefixIcon: Icon(
                                         Icons.security,

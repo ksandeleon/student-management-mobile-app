@@ -84,7 +84,10 @@ class _SignupScreenState extends State<SignupScreen> {
     final firstName = _firstNameController.text.trim();
     final lastName = _lastNameController.text.trim();
     final phone = _phoneController.text.trim();
-    final middleName = _middleNameController.text.trim().isEmpty ? null : _middleNameController.text.trim();
+    final middleName =
+        _middleNameController.text.trim().isEmpty
+            ? null
+            : _middleNameController.text.trim();
 
     try {
       if (_userType == 'student') {
@@ -95,9 +98,18 @@ class _SignupScreenState extends State<SignupScreen> {
           lastName: lastName,
           phone: phone,
           middleName: middleName,
-          studentNumber: _studentNumberController.text.trim().isEmpty ? null : _studentNumberController.text.trim(),
-          address: _addressController.text.trim().isEmpty ? null : _addressController.text.trim(),
-          course: _courseController.text.trim().isEmpty ? null : _courseController.text.trim(),
+          studentNumber:
+              _studentNumberController.text.trim().isEmpty
+                  ? null
+                  : _studentNumberController.text.trim(),
+          address:
+              _addressController.text.trim().isEmpty
+                  ? null
+                  : _addressController.text.trim(),
+          course:
+              _courseController.text.trim().isEmpty
+                  ? null
+                  : _courseController.text.trim(),
           dob: _selectedDate, // make sure _selectedDate is nullable DateTime?
         );
       } else {
@@ -108,21 +120,27 @@ class _SignupScreenState extends State<SignupScreen> {
           lastName: lastName,
           phone: phone,
           middleName: middleName,
-          address: _addressController.text.trim().isEmpty ? null : _addressController.text.trim(),
+          address:
+              _addressController.text.trim().isEmpty
+                  ? null
+                  : _addressController.text.trim(),
           dob: _selectedDate,
-          department: _departmentController.text.trim().isEmpty ? null : _departmentController.text.trim(),
+          department:
+              _departmentController.text.trim().isEmpty
+                  ? null
+                  : _departmentController.text.trim(),
           jobTitle: _selectedJobTitle,
         );
       }
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Signup successful!')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Signup successful!')));
       Navigator.pop(context); // Navigate to login or home
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Signup failed: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Signup failed: $e')));
     }
   }
 
@@ -194,7 +212,7 @@ class _SignupScreenState extends State<SignupScreen> {
                         onPressed: () => Navigator.pop(context),
                       ),
                       Text(
-                        'Sign Up',
+                        'GO STUDENT',
                         style: TextStyle(
                           color: theme.colorScheme.onPrimary,
                           fontSize: 20,
@@ -231,7 +249,7 @@ class _SignupScreenState extends State<SignupScreen> {
                   ),
 
                   Text(
-                    'Sign up as $userTypeText',
+                    'Register as $userTypeText',
                     style: theme.textTheme.bodyLarge?.copyWith(
                       color: theme.colorScheme.onPrimary.withOpacity(0.8),
                     ),
@@ -265,6 +283,7 @@ class _SignupScreenState extends State<SignupScreen> {
                               _buildTextField(
                                 controller: _studentNumberController,
                                 labelText: 'Student Number',
+
                                 prefixIcon: Icons.badge,
                                 primaryColor: primaryColor,
                                 validator: (value) {
@@ -614,10 +633,12 @@ class _SignupScreenState extends State<SignupScreen> {
   }) {
     return TextFormField(
       controller: controller,
+      style: TextStyle(color: Colors.black), // <-- Input text color (black)
       keyboardType: keyboardType,
       readOnly: readOnly,
       decoration: InputDecoration(
         labelText: labelText,
+        labelStyle: TextStyle(color: Colors.grey), // <-- Label remains gray
         prefixIcon: Icon(prefixIcon, color: primaryColor),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(kDefaultBorderRadius),
@@ -652,9 +673,12 @@ class _SignupScreenState extends State<SignupScreen> {
   }) {
     return TextFormField(
       controller: controller,
+      style: TextStyle(color: Colors.black), // <-- Input text color (black)
       obscureText: !isVisible,
       decoration: InputDecoration(
         labelText: labelText,
+        labelStyle: TextStyle(color: Colors.grey), // <-- Label color
+        hintStyle: TextStyle(color: Colors.grey), // <-- Hint color
         prefixIcon: Icon(Icons.lock, color: primaryColor),
         suffixIcon: IconButton(
           icon: Icon(
