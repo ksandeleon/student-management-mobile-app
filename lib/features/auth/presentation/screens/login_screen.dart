@@ -513,9 +513,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 ),
                               ),
                             ),
-
                             const SizedBox(height: kDefaultPadding),
-
                             // Sign up link
                             Row(
                               mainAxisAlignment: MainAxisAlignment.center,
@@ -544,6 +542,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
                   ),
+                  SizedBox(height: 90),
                 ],
               ),
             ),

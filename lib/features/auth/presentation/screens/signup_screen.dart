@@ -20,6 +20,7 @@ class _SignupScreenState extends State<SignupScreen> {
   bool _isConfirmPasswordVisible = false;
   DateTime? _selectedDate;
   String? _selectedJobTitle;
+  String? _selectedDepartment;
 
   // Text editing controllers
   final _studentNumberController = TextEditingController();
@@ -36,15 +37,13 @@ class _SignupScreenState extends State<SignupScreen> {
 
   // List of job titles for admin dropdown
   final List<String> _jobTitles = [
-    'Department Head',
-    'Professor',
-    'Assistant Professor',
-    'Instructor',
-    'Academic Coordinator',
-    'Dean',
-    'IT Administrator',
-    'Registrar',
-    'Guidance Counselor',
+    'Full Time Professor',
+    'Part Time Professor',
+  ];
+
+  final List<String> _deptTitles = [
+    'College of Computing Studies',
+    'College of Arts and Sciences',
   ];
 
   @override
@@ -241,7 +240,7 @@ class _SignupScreenState extends State<SignupScreen> {
 
                   // Welcome text
                   Text(
-                    'Create Account',
+                    'Account Registration',
                     style: theme.textTheme.headlineLarge?.copyWith(
                       color: theme.colorScheme.onPrimary,
                       fontSize: 28,
@@ -251,7 +250,7 @@ class _SignupScreenState extends State<SignupScreen> {
                   Text(
                     'Register as $userTypeText',
                     style: theme.textTheme.bodyLarge?.copyWith(
-                      color: theme.colorScheme.onPrimary.withOpacity(0.8),
+                      color: theme.colorScheme.onPrimary,
                     ),
                   ),
 
@@ -265,7 +264,7 @@ class _SignupScreenState extends State<SignupScreen> {
                       borderRadius: BorderRadius.circular(kLargeBorderRadius),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.2),
+                          color: Colors.black,
                           blurRadius: 15,
                           offset: const Offset(0, 8),
                         ),
@@ -448,25 +447,56 @@ class _SignupScreenState extends State<SignupScreen> {
 
                             // Admin-specific fields
                             if (isAdmin) ...[
-                              _buildTextField(
-                                controller: _departmentController,
-                                labelText: 'Department',
-                                prefixIcon: Icons.business,
-                                primaryColor: primaryColor,
+                              DropdownButtonFormField<String>(
+                                value: _selectedDepartment,
+                                items:
+                                    _deptTitles.map((String dept) {
+                                      return DropdownMenuItem<String>(
+                                        value: dept,
+                                        child: Text(
+                                          dept,
+                                          style: TextStyle(color: Colors.black),
+                                        ),
+                                      );
+                                    }).toList(),
+                                onChanged: (String? newValue) {
+                                  setState(() {
+                                    _selectedDepartment = newValue!;
+                                    _departmentController.text = newValue;
+                                  });
+                                },
+                                decoration: InputDecoration(
+                                  labelText: 'Department',
+                                  prefixIcon: Icon(
+                                    Icons.business,
+                                    color: primaryColor,
+                                  ),
+                                  border: OutlineInputBorder(),
+                                  filled: true, // enables background color
+                                  fillColor:
+                                      Colors
+                                          .white, // sets background color to white
+                                ),
+                                dropdownColor: Color(
+                                  0xFFFFFDD0,
+                                ), // Cream background
                                 validator: (value) {
                                   if (value == null || value.isEmpty) {
-                                    return 'Please enter your department';
+                                    return 'Please select your department';
                                   }
                                   return null;
                                 },
                               ),
+
                               const SizedBox(height: kDefaultPadding),
 
                               // Job Title Dropdown
                               DropdownButtonFormField<String>(
                                 value: _selectedJobTitle,
+                                dropdownColor: Color(0xFFFFFDD0),
                                 decoration: InputDecoration(
                                   labelText: 'Job Title',
+                                  labelStyle: TextStyle(color: Colors.grey), //
                                   prefixIcon: Icon(
                                     Icons.work,
                                     color: primaryColor,
@@ -495,7 +525,10 @@ class _SignupScreenState extends State<SignupScreen> {
                                     _jobTitles.map((String title) {
                                       return DropdownMenuItem<String>(
                                         value: title,
-                                        child: Text(title),
+                                        child: Text(
+                                          title,
+                                          style: TextStyle(color: Colors.black),
+                                        ),
                                       );
                                     }).toList(),
                                 onChanged: (String? newValue) {
@@ -586,7 +619,7 @@ class _SignupScreenState extends State<SignupScreen> {
                               children: [
                                 Text(
                                   "Already have an account?",
-                                  style: TextStyle(color: Colors.grey.shade700),
+                                  style: TextStyle(color: Colors.white),
                                 ),
                                 TextButton(
                                   onPressed: () {
@@ -600,7 +633,7 @@ class _SignupScreenState extends State<SignupScreen> {
                                   child: Text(
                                     'Login',
                                     style: TextStyle(
-                                      color: primaryColor,
+                                      color: kComplementaryColor,
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
