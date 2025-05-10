@@ -37,13 +37,16 @@ class _SignupScreenState extends State<SignupScreen> {
 
   // List of job titles for admin dropdown
   final List<String> _jobTitles = [
-    'Full Time Professor',
-    'Part Time Professor',
+    'Digital Electronics',
+    'Practical Datascience',
+    'Modeling and Simulation',
+    'Database Management',
+    'Software Engineering',
   ];
 
   final List<String> _deptTitles = [
     'College of Computing Studies',
-    'College of Arts and Sciences',
+    // 'College of Arts and Sciences',
   ];
 
   @override
@@ -467,6 +470,7 @@ class _SignupScreenState extends State<SignupScreen> {
                                 },
                                 decoration: InputDecoration(
                                   labelText: 'Department',
+                                  labelStyle: TextStyle(color: Colors.grey), 
                                   prefixIcon: Icon(
                                     Icons.business,
                                     color: primaryColor,

@@ -107,7 +107,11 @@ class _LoginScreenState extends State<LoginScreen> {
 
       // Navigate to the appropriate dashboard
       if (isAdmin) {
-        Navigator.pushReplacementNamed(context, 'admin_dashboard');
+
+        
+
+
+
       } else {
         // For student login, we need to:
         // 1. Get the current Firebase user
