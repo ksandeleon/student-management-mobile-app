@@ -5,6 +5,10 @@ class ScheduleModel {
   final String endTime;    // e.g., "10:00 AM"
   final String room;
   final String status;     // e.g., "active", "cancelled", "rescheduled"
+  final String adminId;    // ID of the admin who created this schedule
+  final DateTime? date;    // Optional date for the schedule
+  final DateTime createdAt;
+  final DateTime updatedAt;
 
   ScheduleModel({
     required this.id,
@@ -13,6 +17,10 @@ class ScheduleModel {
     required this.endTime,
     required this.room,
     required this.status,
+    required this.adminId,
+    this.date,
+    required this.createdAt,
+    required this.updatedAt,
   });
 
   // From Firestore document
@@ -24,6 +32,10 @@ class ScheduleModel {
       endTime: data['endTime'] ?? '',
       room: data['room'] ?? '',
       status: data['status'] ?? 'active',
+      adminId: data['adminId'] ?? '',
+      date: data['date']?.toDate(),
+      createdAt: data['createdAt']?.toDate() ?? DateTime.now(),
+      updatedAt: data['updatedAt']?.toDate() ?? DateTime.now(),
     );
   }
 
@@ -35,6 +47,21 @@ class ScheduleModel {
       'endTime': endTime,
       'room': room,
       'status': status,
+      'adminId': adminId,
+      'date': date,
+      'createdAt': createdAt,
+      'updatedAt': updatedAt,
     };
+  }
+
+  // Helper method to check if schedule is active
+  bool get isActive => status == 'active';
+
+  // Helper method to get duration
+  String get duration => '$startTime - $endTime';
+
+  // Convert to a shorter display string
+  String toDisplayString() {
+    return '$subject ($duration) in $room';
   }
 }

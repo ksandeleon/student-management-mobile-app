@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:true_studentmgnt_mobapp/features/auth/presentation/screens/admin/ad_classes_screen.dart';
 import 'package:true_studentmgnt_mobapp/features/auth/presentation/screens/admin/ad_profile_screen.dart';
+import 'package:true_studentmgnt_mobapp/features/auth/presentation/screens/admin/ad_schedule_screen.dart';
 
 import '../../../data/models/admin_model.dart';
 
@@ -28,7 +29,7 @@ class _AdminWrapperState extends State<AdminWrapper> {
       admin = Provider.of<AdminModel>(context, listen: false);
       _pages = [
         AdClassScreen(admin: admin), // <- Add AdminClassesScreen here
-        Center(child: Text("Schedules Page Placeholder")),
+        AdScheduleScreen(admin: admin),
         AdEnrollmentScreen(admin: admin),
       ];
       _initialized = true;
