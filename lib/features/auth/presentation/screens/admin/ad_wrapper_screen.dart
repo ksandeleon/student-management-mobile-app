@@ -35,12 +35,6 @@ class _AdminWrapperState extends State<AdminWrapper> {
     }
   }
 
-  void _handleProfileChanges(AdminModel updatedAdmin) {
-    setState(() {
-      admin = updatedAdmin;
-    });
-  }
-
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;

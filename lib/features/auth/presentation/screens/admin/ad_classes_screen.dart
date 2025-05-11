@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:true_studentmgnt_mobapp/config/constants.dart';
@@ -31,27 +32,35 @@ class _AdClassScreenState extends State<AdClassScreen> {
     super.initState();
     _loadStudents();
   }
-Future<void> _loadStudents() async {
-  if (_isLoadingStudents) return;
 
-  setState(() {
-    _isLoadingStudents = true;
-    _errorMessage = null;
-  });
+  Future<void> _loadStudents() async {
+    if (_isLoadingStudents || widget.admin.jobTitle == null) return;
 
-  try {
-    final students = await EnrollmentHelper.getStudentsBySubject(widget.admin.jobTitle);
     setState(() {
-      _students = students;
-      _isLoadingStudents = false;
+      _isLoadingStudents = true;
+      _errorMessage = null;
     });
-  } catch (e) {
-    setState(() {
-      _errorMessage = 'Failed to load students: $e';
-      _isLoadingStudents = false;
-    });
+
+    try {
+      final students = await EnrollmentHelper.getStudentsBySubject(
+        widget.admin.jobTitle,
+      );
+      setState(() {
+        _students = students;
+      });
+    } catch (e) {
+      setState(() {
+        _errorMessage = 'Failed to load students: ${e.toString()}';
+      });
+      if (kDebugMode) {
+        print('Error loading students: $e');
+      }
+    } finally {
+      setState(() {
+        _isLoadingStudents = false;
+      });
+    }
   }
-}
 
   // // Separate function to load students - called once in initState
   // Future<void> _loadStudents() async {
@@ -212,7 +221,7 @@ Future<void> _loadStudents() async {
   Widget build(BuildContext context) {
     return Scaffold(
       key: _scaffoldKey,
-     drawer: Builder(builder: (context) => _buildStudentsDrawer()),
+      drawer: Builder(builder: (context) => _buildStudentsDrawer()),
       appBar: _buildAppBar(),
       backgroundColor: Colors.grey[100],
       body: _buildBody(),
@@ -239,7 +248,19 @@ Future<void> _loadStudents() async {
           _isLoadingStudents
               ? const Center(child: CircularProgressIndicator())
               : _errorMessage != null
-              ? Center(child: Text(_errorMessage!))
+              ? Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(_errorMessage!),
+                    const SizedBox(height: 16),
+                    ElevatedButton(
+                      onPressed: _loadStudents,
+                      child: const Text('Retry'),
+                    ),
+                  ],
+                ),
+              )
               : ListView(
                 padding: const EdgeInsets.all(kDefaultPadding),
                 children: [

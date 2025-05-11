@@ -9,17 +9,48 @@ class EnrollmentHelper {
   static final CollectionReference _studentsRef =
       FirebaseFirestore.instance.collection('students');
 
+  static final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  static Future<List<StudentModel>> getStudentsBySubject(String? subjectName) async {
-    final querySnapshot = await FirebaseFirestore.instance
-        .collection('students')
-        .where('enrolledSubjects', arrayContains: subjectName)
+static Future<List<StudentModel>> getStudentsBySubject(String? subject) async {
+  if (subject == null || subject.isEmpty) return [];
+
+  try {
+    // First get all enrollments for this subject
+    final enrollmentQuery = await _firestore
+        .collection('enrollments')
+        .where('subject', isEqualTo: subject)
         .get();
 
-    return querySnapshot.docs
-        .map((doc) => StudentModel.fromMap(doc.data(), docId: doc.id))
+    if (enrollmentQuery.docs.isEmpty) return [];
+
+    // Get all student IDs from enrollments
+    final studentIds = enrollmentQuery.docs
+        .map((doc) => doc.data()['studentId'] as String)
         .toList();
+
+    // Handle more than 10 students by batching
+    List<StudentModel> allStudents = [];
+    for (var i = 0; i < studentIds.length; i += 10) {
+      final batchIds = studentIds.sublist(
+        i,
+        i + 10 > studentIds.length ? studentIds.length : i + 10,
+      );
+
+      final studentsQuery = await _firestore
+          .collection('students')
+          .where(FieldPath.documentId, whereIn: batchIds)
+          .get();
+
+      allStudents.addAll(studentsQuery.docs
+          .map((doc) => StudentModel.fromMap(doc.data(), docId: doc.id)));
+    }
+
+    return allStudents;
+  } catch (e) {
+    throw Exception('Failed to fetch students: $e');
   }
+}
+
 
   /// Get all enrollments for a specific subject/class
   static Future<List<EnrollmentModel>> getEnrollmentsBySubject(String subject) async {
