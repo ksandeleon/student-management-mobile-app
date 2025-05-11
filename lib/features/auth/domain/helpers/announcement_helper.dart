@@ -6,39 +6,61 @@ class AnnouncementHelper {
   static final CollectionReference _announcementsRef =
       FirebaseFirestore.instance.collection('announcements');
 
-  /// POST a new announcement
+  /// Post a new announcement
   static Future<void> postAnnouncement(String text, AdminModel admin) async {
-    await _announcementsRef.add({
-      'text': text.trim(),
-      'author': '${admin.firstName} ${admin.lastName}',
-      'timestamp': FieldValue.serverTimestamp(),
-      'adminId': admin.uid,
-      'subject': admin.jobTitle,
-    });
+    try {
+      await _announcementsRef.add({
+        'text': text,
+        'author': '${admin.firstName} ${admin.lastName}',
+        'timestamp': FieldValue.serverTimestamp(),
+        'adminId': admin.uid,
+        'subject': admin.jobTitle, // Using jobTitle as subject identifier
+      });
+    } catch (e) {
+      throw Exception('Failed to post announcement: $e');
+    }
   }
 
-  /// GET all announcements by job title (subject)
-  static Future<List<AnnouncementModel>> getAnnouncementsByJobTitle(String jobTitle) async {
-    final querySnapshot = await _announcementsRef
-        .where('subject', isEqualTo: jobTitle)
+  /// Edit an existing announcement
+  static Future<void> editAnnouncement(String announcementId, String newText) async {
+    try {
+      await _announcementsRef.doc(announcementId).update({
+        'text': newText,
+        'timestamp': FieldValue.serverTimestamp(), // Update timestamp on edit
+      });
+    } catch (e) {
+      throw Exception('Failed to edit announcement: $e');
+    }
+  }
+
+  /// Delete an announcement
+  static Future<void> deleteAnnouncement(String announcementId) async {
+    try {
+      await _announcementsRef.doc(announcementId).delete();
+    } catch (e) {
+      throw Exception('Failed to delete announcement: $e');
+    }
+  }
+
+  /// Get announcements stream for a specific subject (admin's jobTitle)
+  static Stream<List<AnnouncementModel>> getAnnouncementsStream(String subject) {
+    return _announcementsRef
+        .where('subject', isEqualTo: subject)
         .orderBy('timestamp', descending: true)
-        .get();
-
-    return querySnapshot.docs.map((doc) {
-      return AnnouncementModel.fromMap(doc.data() as Map<String, dynamic>, doc.id);
-    }).toList();
+        .snapshots()
+        .map((snapshot) => snapshot.docs
+            .map((doc) => AnnouncementModel.fromMap(doc.data() as Map<String, dynamic>, doc.id))
+            .toList());
   }
 
-  /// EDIT an announcement by document ID
-  static Future<void> editAnnouncement(String id, String newText) async {
-    await _announcementsRef.doc(id).update({
-      'text': newText.trim(),
-      'timestamp': FieldValue.serverTimestamp(), // optional: update time
-    });
-  }
-
-  /// DELETE an announcement by document ID
-  static Future<void> deleteAnnouncement(String id) async {
-    await _announcementsRef.doc(id).delete();
+  /// Get announcements for students (by subject)
+  static Stream<List<AnnouncementModel>> getStudentAnnouncementsStream(String subject) {
+    return _announcementsRef
+        .where('subject', isEqualTo: subject)
+        .orderBy('timestamp', descending: true)
+        .snapshots()
+        .map((snapshot) => snapshot.docs
+            .map((doc) => AnnouncementModel.fromMap(doc.data() as Map<String, dynamic>, doc.id))
+            .toList());
   }
 }

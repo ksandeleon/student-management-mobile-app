@@ -6,6 +6,7 @@ import 'package:true_studentmgnt_mobapp/features/auth/data/models/admin_model.da
 import 'package:true_studentmgnt_mobapp/features/auth/data/models/student_model.dart';
 import 'package:true_studentmgnt_mobapp/features/auth/data/models/announcement_model.dart';
 import 'package:true_studentmgnt_mobapp/features/auth/domain/helpers/announcement_helper.dart';
+import 'package:true_studentmgnt_mobapp/features/auth/domain/helpers/enrollment_helper.dart';
 
 class AdClassScreen extends StatefulWidget {
   final AdminModel admin;
@@ -30,33 +31,56 @@ class _AdClassScreenState extends State<AdClassScreen> {
     super.initState();
     _loadStudents();
   }
+Future<void> _loadStudents() async {
+  if (_isLoadingStudents) return;
 
-  // Separate function to load students - called once in initState
-  Future<void> _loadStudents() async {
-    if (_isLoadingStudents) return;
+  setState(() {
+    _isLoadingStudents = true;
+    _errorMessage = null;
+  });
 
+  try {
+    final students = await EnrollmentHelper.getStudentsBySubject(widget.admin.jobTitle);
     setState(() {
-      _isLoadingStudents = true;
-      _errorMessage = null;
+      _students = students;
+      _isLoadingStudents = false;
     });
-
-    try {
-      final querySnapshot = await FirebaseFirestore.instance.collection('students').get();
-      final students = querySnapshot.docs
-          .map((doc) => StudentModel.fromMap(doc.data(), docId: doc.id))
-          .toList();
-
-      setState(() {
-        _students = students;
-        _isLoadingStudents = false;
-      });
-    } catch (e) {
-      setState(() {
-        _errorMessage = 'Failed to load students: $e';
-        _isLoadingStudents = false;
-      });
-    }
+  } catch (e) {
+    setState(() {
+      _errorMessage = 'Failed to load students: $e';
+      _isLoadingStudents = false;
+    });
   }
+}
+
+  // // Separate function to load students - called once in initState
+  // Future<void> _loadStudents() async {
+  //   if (_isLoadingStudents) return;
+
+  //   setState(() {
+  //     _isLoadingStudents = true;
+  //     _errorMessage = null;
+  //   });
+
+  //   try {
+  //     final querySnapshot =
+  //         await FirebaseFirestore.instance.collection('students').get();
+  //     final students =
+  //         querySnapshot.docs
+  //             .map((doc) => StudentModel.fromMap(doc.data(), docId: doc.id))
+  //             .toList();
+
+  //     setState(() {
+  //       _students = students;
+  //       _isLoadingStudents = false;
+  //     });
+  //   } catch (e) {
+  //     setState(() {
+  //       _errorMessage = 'Failed to load students: $e';
+  //       _isLoadingStudents = false;
+  //     });
+  //   }
+  // }
 
   // Refactored to use AnnouncementHelper
   Future<void> _postAnnouncement() async {
@@ -95,37 +119,43 @@ class _AdClassScreenState extends State<AdClassScreen> {
         .where('adminId', isEqualTo: widget.admin.uid)
         .orderBy('timestamp', descending: true)
         .snapshots()
-        .map((snapshot) => snapshot.docs
-            .map((doc) => AnnouncementModel.fromMap(doc.data(), doc.id))
-            .toList());
+        .map(
+          (snapshot) =>
+              snapshot.docs
+                  .map((doc) => AnnouncementModel.fromMap(doc.data(), doc.id))
+                  .toList(),
+        );
   }
 
   // Function to delete an announcement with confirmation
   Future<void> _deleteAnnouncement(String announcementId) async {
     final shouldDelete = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Delete Announcement'),
-        content: const Text('Are you sure you want to delete this announcement?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('CANCEL'),
+      builder:
+          (context) => AlertDialog(
+            title: const Text('Delete Announcement'),
+            content: const Text(
+              'Are you sure you want to delete this announcement?',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: const Text('CANCEL'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(true),
+                child: const Text('DELETE'),
+              ),
+            ],
           ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('DELETE'),
-          ),
-        ],
-      ),
     );
 
     if (shouldDelete == true) {
       try {
         await AnnouncementHelper.deleteAnnouncement(announcementId);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Announcement deleted')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Announcement deleted')));
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Failed to delete announcement: $e')),
@@ -140,34 +170,36 @@ class _AdClassScreenState extends State<AdClassScreen> {
 
     final newText = await showDialog<String>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Edit Announcement'),
-        content: TextField(
-          controller: controller,
-          maxLines: 4,
-          decoration: const InputDecoration(
-            hintText: "Edit your announcement here...",
+      builder:
+          (context) => AlertDialog(
+            title: const Text('Edit Announcement'),
+            content: TextField(
+              controller: controller,
+              maxLines: 4,
+              decoration: const InputDecoration(
+                hintText: "Edit your announcement here...",
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text('CANCEL'),
+              ),
+              TextButton(
+                onPressed:
+                    () => Navigator.of(context).pop(controller.text.trim()),
+                child: const Text('SAVE'),
+              ),
+            ],
           ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('CANCEL'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(controller.text.trim()),
-            child: const Text('SAVE'),
-          ),
-        ],
-      ),
     );
 
     if (newText != null && newText.isNotEmpty && newText != announcement.text) {
       try {
         await AnnouncementHelper.editAnnouncement(announcement.id, newText);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Announcement updated')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Announcement updated')));
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Failed to update announcement: $e')),
@@ -180,7 +212,7 @@ class _AdClassScreenState extends State<AdClassScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       key: _scaffoldKey,
-      drawer: _buildStudentsDrawer(),
+     drawer: Builder(builder: (context) => _buildStudentsDrawer()),
       appBar: _buildAppBar(),
       backgroundColor: Colors.grey[100],
       body: _buildBody(),
@@ -201,30 +233,30 @@ class _AdClassScreenState extends State<AdClassScreen> {
     );
   }
 
-
   Widget _buildStudentsDrawer() {
     return Drawer(
-      child: _isLoadingStudents
-          ? const Center(child: CircularProgressIndicator())
-          : _errorMessage != null
+      child:
+          _isLoadingStudents
+              ? const Center(child: CircularProgressIndicator())
+              : _errorMessage != null
               ? Center(child: Text(_errorMessage!))
               : ListView(
-                  padding: const EdgeInsets.all(kDefaultPadding),
-                  children: [
-                    const Text("Enrolled Students", style: kHeadingTextStyle),
-                    const SizedBox(height: kDefaultPadding),
-                    if (_students.isEmpty)
-                      const Center(
-                        child: Text("No students enrolled yet"),
-                      )
-                    else
-                      ..._students.map((student) => ListTile(
-                            title: Text("${student.firstName} ${student.lastName}"),
-                            subtitle: Text(student.email),
-                            leading: const Icon(Icons.person_outline),
-                          )),
-                  ],
-                ),
+                padding: const EdgeInsets.all(kDefaultPadding),
+                children: [
+                  const Text("Enrolled Students", style: kHeadingTextStyle),
+                  const SizedBox(height: kDefaultPadding),
+                  if (_students.isEmpty)
+                    const Center(child: Text("No students enrolled yet"))
+                  else
+                    ..._students.map(
+                      (student) => ListTile(
+                        title: Text("${student.firstName} ${student.lastName}"),
+                        subtitle: Text(student.email),
+                        leading: const Icon(Icons.person_outline),
+                      ),
+                    ),
+                ],
+              ),
     );
   }
 
@@ -272,7 +304,7 @@ class _AdClassScreenState extends State<AdClassScreen> {
                   ),
                 ],
               ),
-            )
+            ),
           ],
         ),
       ),
@@ -323,10 +355,7 @@ class _AdClassScreenState extends State<AdClassScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          "Class Announcements",
-          style: kHeadingTextStyle,
-        ),
+        const Text("Class Announcements", style: kHeadingTextStyle),
         const SizedBox(height: kSmallPadding),
         StreamBuilder<List<AnnouncementModel>>(
           stream: _getAnnouncementsStream(),
@@ -336,9 +365,7 @@ class _AdClassScreenState extends State<AdClassScreen> {
             }
 
             if (snapshot.hasError) {
-              return Center(
-                child: Text('Error: ${snapshot.error}'),
-              );
+              return Center(child: Text('Error: ${snapshot.error}'));
             }
 
             final announcements = snapshot.data ?? [];
@@ -360,7 +387,9 @@ class _AdClassScreenState extends State<AdClassScreen> {
               itemCount: announcements.length,
               itemBuilder: (context, index) {
                 final announcement = announcements[index];
-                final date = DateFormat.yMMMd().add_jm().format(announcement.timestamp.toDate());
+                final date = DateFormat.yMMMd().add_jm().format(
+                  announcement.timestamp.toDate(),
+                );
 
                 return Card(
                   margin: const EdgeInsets.symmetric(vertical: kSmallPadding),
@@ -376,11 +405,17 @@ class _AdClassScreenState extends State<AdClassScreen> {
                           children: [
                             Text(
                               "Posted by ${announcement.author}",
-                              style: const TextStyle(fontSize: 12, color: Colors.grey),
+                              style: const TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey,
+                              ),
                             ),
                             Text(
                               date,
-                              style: const TextStyle(fontSize: 12, color: Colors.grey),
+                              style: const TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey,
+                              ),
                             ),
                           ],
                         ),
@@ -395,7 +430,8 @@ class _AdClassScreenState extends State<AdClassScreen> {
                             ),
                             IconButton(
                               icon: const Icon(Icons.delete, size: 18),
-                              onPressed: () => _deleteAnnouncement(announcement.id),
+                              onPressed:
+                                  () => _deleteAnnouncement(announcement.id),
                               tooltip: 'Delete',
                             ),
                           ],

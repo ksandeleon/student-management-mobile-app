@@ -9,6 +9,18 @@ class EnrollmentHelper {
   static final CollectionReference _studentsRef =
       FirebaseFirestore.instance.collection('students');
 
+
+  static Future<List<StudentModel>> getStudentsBySubject(String? subjectName) async {
+    final querySnapshot = await FirebaseFirestore.instance
+        .collection('students')
+        .where('enrolledSubjects', arrayContains: subjectName)
+        .get();
+
+    return querySnapshot.docs
+        .map((doc) => StudentModel.fromMap(doc.data(), docId: doc.id))
+        .toList();
+  }
+
   /// Get all enrollments for a specific subject/class
   static Future<List<EnrollmentModel>> getEnrollmentsBySubject(String subject) async {
     final querySnapshot = await _enrollmentsRef
@@ -52,7 +64,7 @@ class EnrollmentHelper {
 
     // Create a set of enrolled student IDs for efficient lookup
     final enrolledIds = enrollmentsSnapshot.docs
-        .map((doc) => doc.data()['studentId'] as String)
+        .map((doc) => (doc.data() as Map<String, dynamic>)['studentId'] as String)
         .toSet();
 
     // Get all students
@@ -121,6 +133,6 @@ class EnrollmentHelper {
         .count()
         .get();
 
-    return querySnapshot.count;
+   return querySnapshot.count ?? 0;
   }
 }
