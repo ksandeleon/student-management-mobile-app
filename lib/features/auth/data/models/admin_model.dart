@@ -10,8 +10,8 @@ class AdminModel extends ChangeNotifier{
   final String email;
   final String? address;
   final DateTime? dob;
-  final String? department;
-  final String? jobTitle;
+  final String? department; //only hardcoded because have one. no updates planned. current is "College of Computing Science"
+  final String? jobTitle; //this is basically subjectname.. e.g. "Digital Electronics or practical datascience"
 
   AdminModel({
     required this.uid,

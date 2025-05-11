@@ -2,7 +2,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:true_studentmgnt_mobapp/features/auth/data/models/admin_model.dart';
 import 'package:true_studentmgnt_mobapp/features/auth/data/models/student_model.dart';
+import 'package:true_studentmgnt_mobapp/features/auth/presentation/screens/admin/ad_wrapper_screen.dart';
 import 'package:true_studentmgnt_mobapp/features/auth/presentation/screens/student/st_wrapper_screen.dart';
 import 'package:true_studentmgnt_mobapp/services/auth_service.dart';
 import 'package:true_studentmgnt_mobapp/config/constants.dart';
@@ -44,134 +46,129 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
-  Future<void> _handleLogin() async {
-    // First validate the form inputs
-    if (!_formKey.currentState!.validate()) {
-      return;
-    }
-    try {
-      // Show loading indicator
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (context) => const Center(child: CircularProgressIndicator()),
-      );
+Future<void> _handleLogin() async {
+  if (!_formKey.currentState!.validate()) return;
 
-      final isAdmin = _userType == 'admin';
-      final email = _emailController.text.trim();
-      final password = _passwordController.text.trim();
+  try {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(child: CircularProgressIndicator()),
+    );
 
-      // Verify admin key if user is logging in as admin
-      if (isAdmin) {
-        final adminKey = _adminKeyController.text.trim();
-        if (adminKey != '122333') {
-          // Close loading dialog
-          Navigator.pop(context);
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Invalid admin key. Please try again.'),
-              backgroundColor: Colors.red,
-            ),
-          );
-          return;
-        }
-      }
+    final isAdmin = _userType == 'admin';
+    final email = _emailController.text.trim();
+    final password = _passwordController.text.trim();
 
-      // Get the AuthService instance
-      final authService = AuthService();
-
-      // Sign in using the authService
-      final userRole = await authService.signIn(
-        email: email,
-        password: password,
-      );
-
-      // Close loading dialog
-      Navigator.pop(context);
-
-      // Verify the returned role matches the expected role
-      if ((isAdmin && userRole != 'admin') ||
-          (!isAdmin && userRole != 'student')) {
+    if (isAdmin) {
+      final adminKey = _adminKeyController.text.trim();
+      if (adminKey != '122333') {
+        Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              isAdmin
-                  ? 'This account is not registered as an admin.'
-                  : 'This account is not registered as a student.',
-            ),
+          const SnackBar(
+            content: Text('Invalid admin key. Please try again.'),
             backgroundColor: Colors.red,
           ),
         );
         return;
       }
-
-      // Navigate to the appropriate dashboard
-      if (isAdmin) {
-
-        
-
-
-
-      } else {
-        // For student login, we need to:
-        // 1. Get the current Firebase user
-        final user = FirebaseAuth.instance.currentUser;
-        if (user != null) {
-          // 2. Fetch the student data from Firestore
-          final studentDoc =
-              await FirebaseFirestore.instance
-                  .collection('students')
-                  .doc(user.uid)
-                  .get();
-
-          if (studentDoc.exists) {
-            // 3. Create a StudentModel from the Firestore data
-            final studentModel = StudentModel.fromMap(
-              studentDoc.data() as Map<String, dynamic>,
-              docId: user.uid,
-            );
-
-            // 4. Navigate to StudentWrapper with the StudentModel in a Provider
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(
-                builder:
-                    (context) => ChangeNotifierProvider.value(
-                      value: studentModel,
-                      child: const StudentWrapper(),
-                    ),
-              ),
-            );
-          } else {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text(
-                  'Student data not found. Please contact support.',
-                ),
-                backgroundColor: Colors.red,
-              ),
-            );
-          }
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Authentication error. Please try again.'),
-              backgroundColor: Colors.red,
-            ),
-          );
-        }
-      }
-    } catch (e) {
-      // Close loading dialog if it's open
-      if (Navigator.canPop(context)) {
-        Navigator.pop(context);
-      }
-      // Display error message
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString()), backgroundColor: Colors.red),
-      );
     }
+
+    final authService = AuthService();
+    final userRole = await authService.signIn(email: email, password: password);
+    Navigator.pop(context);
+
+    if ((isAdmin && userRole != 'admin') || (!isAdmin && userRole != 'student')) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            isAdmin
+              ? 'This account is not registered as an admin.'
+              : 'This account is not registered as a student.',
+          ),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    final user = FirebaseAuth.instance.currentUser;
+
+    if (user == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Authentication error. Please try again.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    if (isAdmin) {
+      final adminDoc = await FirebaseFirestore.instance
+          .collection('admins')
+          .doc(user.uid)
+          .get();
+
+      if (adminDoc.exists) {
+        final adminModel = AdminModel.fromMap(
+          adminDoc.data() as Map<String, dynamic>,
+        );
+
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ChangeNotifierProvider.value(
+              value: adminModel,
+              child: const AdminWrapper(),
+            ),
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Admin data not found. Please contact support.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } else {
+      final studentDoc = await FirebaseFirestore.instance
+          .collection('students')
+          .doc(user.uid)
+          .get();
+
+      if (studentDoc.exists) {
+        final studentModel = StudentModel.fromMap(
+          studentDoc.data() as Map<String, dynamic>,
+          docId: user.uid,
+        );
+
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ChangeNotifierProvider.value(
+              value: studentModel,
+              child: const StudentWrapper(),
+            ),
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Student data not found. Please contact support.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  } catch (e) {
+    if (Navigator.canPop(context)) Navigator.pop(context);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(e.toString()), backgroundColor: Colors.red),
+    );
   }
+}
 
   @override
   Widget build(BuildContext context) {

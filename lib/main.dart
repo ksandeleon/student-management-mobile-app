@@ -30,8 +30,8 @@ class MyApp extends StatelessWidget {
       darkTheme: AppTheme.darkTheme,
       themeMode: ThemeMode.system,
 
-      initialRoute: 'class_screen',
-      // initialRoute: 'stschedule_screen',
+    //   initialRoute: 'class_screen',
+      initialRoute: 'stschedule_screen',
       routes: {
         WelcomeScreen.id: (context) => WelcomeScreen(), // id = "welcome_screen"
         LoginScreen.id: (context) => LoginScreen(), //id = "login_screen"
