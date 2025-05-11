@@ -31,7 +31,7 @@ class MyApp extends StatelessWidget {
       themeMode: ThemeMode.system,
 
     //   initialRoute: 'class_screen',
-      initialRoute: 'stschedule_screen',
+      initialRoute: 'welcome_screen',
       routes: {
         WelcomeScreen.id: (context) => WelcomeScreen(), // id = "welcome_screen"
         LoginScreen.id: (context) => LoginScreen(), //id = "login_screen"
@@ -46,6 +46,7 @@ class MyApp extends StatelessWidget {
             (context) => StScheduleScreen(), // id = "stschedule_screen"
         // StudentProfileScreen.id: (context) => StudentProfileScreen(student: student, onSubmitChanges: onSubmitChanges), //stprofile_screen
         // ClassScreen.id: (context) => ClassScreen();
+        
       },
     );
   }
