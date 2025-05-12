@@ -3,8 +3,8 @@ import 'package:true_studentmgnt_mobapp/features/auth/data/models/student_model.
 
 class StudentService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final CollectionReference _studentsCollection =
-      FirebaseFirestore.instance.collection('students');
+  final CollectionReference _studentsCollection = FirebaseFirestore.instance
+      .collection('students');
 
   // Get all students as a list
   Future<List<StudentModel>> getAllStudents() async {
