@@ -34,7 +34,7 @@ class _StudentWrapperState extends State<StudentWrapper> {
         StudentProfileScreen(
           student: student,
           onSubmitChanges: _handleProfileChanges,
-        ), 
+        ),
       ];
       _initialized = true;
     }

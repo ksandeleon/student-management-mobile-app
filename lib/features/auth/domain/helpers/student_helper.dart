@@ -19,12 +19,14 @@ class StudentService {
     }
   }
 
-  // Add a new studentsssss
-  Future<void> addStudent(StudentModel student) async {
+  // Add a new student - direct save to Firebase
+  Future<bool> addStudent(StudentModel student) async {
     try {
       await _studentsCollection.doc(student.uid).set(student.toMap());
+      return true; // Operation succeeded
     } catch (e) {
       print('Error adding student: $e');
+      return false; // Operation failed
     }
   }
 
@@ -41,21 +43,49 @@ class StudentService {
     return null;
   }
 
-  // Update student
-  Future<void> updateStudent(StudentModel student) async {
+  // Update student - direct save to Firebase without pending state
+  Future<bool> updateStudent(StudentModel student) async {
     try {
       await _studentsCollection.doc(student.uid).update(student.toMap());
+      return true; // Operation succeeded
     } catch (e) {
       print('Error updating student: $e');
+      return false; // Operation failed
     }
   }
 
   // Delete student
-  Future<void> deleteStudent(String uid) async {
+  Future<bool> deleteStudent(String uid) async {
     try {
       await _studentsCollection.doc(uid).delete();
+      return true; // Operation succeeded
     } catch (e) {
       print('Error deleting student: $e');
+      return false; // Operation failed
+    }
+  }
+
+  // Method to save student edits directly to Firebase
+  Future<bool> saveStudentEdits(StudentModel updatedStudent) async {
+    try {
+      // Update the student document directly
+      await _studentsCollection.doc(updatedStudent.uid).update({
+        'firstName': updatedStudent.firstName,
+        'lastName': updatedStudent.lastName,
+        'email': updatedStudent.email,
+        'phone': updatedStudent.phone,
+        'middleName': updatedStudent.middleName,
+        'studentNumber': updatedStudent.studentNumber,
+        'address': updatedStudent.address,
+        'course': updatedStudent.course,
+        'dob': updatedStudent.dob?.toIso8601String(),
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+
+      return true; // Operation succeeded
+    } catch (e) {
+      print('Error saving student edits: $e');
+      return false; // Operation failed
     }
   }
 }
