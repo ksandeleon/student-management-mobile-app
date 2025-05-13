@@ -70,7 +70,7 @@ class _StudentWrapperState extends State<StudentWrapper> {
         currentIndex: _selectedIndex,
         onTap: _onItemTapped,
         // Customize the styling to match your app theme
-        selectedItemColor: Theme.of(context).colorScheme.secondary,
+        selectedItemColor: Theme.of(context).colorScheme.primary,
         backgroundColor: Theme.of(context).colorScheme.surface,
       ),
     );
