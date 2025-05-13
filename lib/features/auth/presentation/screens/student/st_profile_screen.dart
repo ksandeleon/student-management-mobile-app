@@ -1,5 +1,7 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:true_studentmgnt_mobapp/features/auth/presentation/screens/welcome_screen.dart';
 
 import '../../../data/models/student_model.dart';
 
@@ -35,7 +37,6 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
   late TextEditingController _courseController;
   DateTime? _selectedDate;
 
-
   @override
   void initState() {
     super.initState();
@@ -63,7 +64,6 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
     );
   }
 
-
   @override
   void dispose() {
     // Dispose controllers
@@ -77,7 +77,6 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
     _courseController.dispose();
     super.dispose();
   }
-
 
   void _toggleEditMode() {
     setState(() {
@@ -96,7 +95,6 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
       }
     });
   }
-
 
   void _submitChanges() {
     // Check which fields have changed
@@ -168,7 +166,6 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
     });
   }
 
-
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
       context: context,
@@ -206,6 +203,17 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
         slivers: [
           // Custom app bar with school logo and name
           SliverAppBar(
+            leading: IconButton(
+              icon: const Icon(Icons.logout),
+              onPressed: () async {
+                await FirebaseAuth.instance
+                    .signOut(); // 🔐 Sign out from Firebase
+                Navigator.pushReplacementNamed(
+                  context,
+                  WelcomeScreen.id,
+                ); // ⬅️ Redirect to WelcomeScreen
+              },
+            ),
             expandedHeight: 200.0,
             floating: false,
             pinned: true,

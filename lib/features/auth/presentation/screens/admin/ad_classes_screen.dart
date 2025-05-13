@@ -62,35 +62,6 @@ class _AdClassScreenState extends State<AdClassScreen> {
     }
   }
 
-  // // Separate function to load students - called once in initState
-  // Future<void> _loadStudents() async {
-  //   if (_isLoadingStudents) return;
-
-  //   setState(() {
-  //     _isLoadingStudents = true;
-  //     _errorMessage = null;
-  //   });
-
-  //   try {
-  //     final querySnapshot =
-  //         await FirebaseFirestore.instance.collection('students').get();
-  //     final students =
-  //         querySnapshot.docs
-  //             .map((doc) => StudentModel.fromMap(doc.data(), docId: doc.id))
-  //             .toList();
-
-  //     setState(() {
-  //       _students = students;
-  //       _isLoadingStudents = false;
-  //     });
-  //   } catch (e) {
-  //     setState(() {
-  //       _errorMessage = 'Failed to load students: $e';
-  //       _isLoadingStudents = false;
-  //     });
-  //   }
-  // }
-
   // Refactored to use AnnouncementHelper
   Future<void> _postAnnouncement() async {
     final text = _announcementController.text.trim();
@@ -223,21 +194,29 @@ class _AdClassScreenState extends State<AdClassScreen> {
       key: _scaffoldKey,
       drawer: Builder(builder: (context) => _buildStudentsDrawer()),
       appBar: _buildAppBar(),
-      backgroundColor: Colors.grey[100],
-      body: _buildBody(),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [kPrimaryColor, kComplementaryColor],
+          ),
+        ),
+        child: _buildBody(), // Your actual body content
+      ),
     );
   }
 
   // Split widget methods for better readability
   PreferredSizeWidget _buildAppBar() {
     return AppBar(
-      title: const Text("Classroom"),
+      title: const Text("FACULTY CLASSROOM"),
       backgroundColor: kPrimaryColor,
       actions: [
-        IconButton(
-          icon: const Icon(Icons.menu),
-          onPressed: () => _scaffoldKey.currentState?.openDrawer(),
-        ),
+        // IconButton(
+        //   icon: const Icon(Icons.menu),
+        //   onPressed: () => _scaffoldKey.currentState?.openDrawer(),
+        // ),
       ],
     );
   }
@@ -344,8 +323,12 @@ class _AdClassScreenState extends State<AdClassScreen> {
         TextField(
           controller: _announcementController,
           maxLines: 4,
+          style: TextStyle(
+            color: Colors.black,
+          ), // 👈 this sets user input color
           decoration: InputDecoration(
             hintText: "Type your announcement here...",
+            hintStyle: TextStyle(color: Colors.black45),
             filled: true,
             fillColor: Colors.white,
             border: OutlineInputBorder(
@@ -364,7 +347,7 @@ class _AdClassScreenState extends State<AdClassScreen> {
             const SizedBox(width: kSmallPadding),
             TextButton(
               onPressed: () => _announcementController.clear(),
-              child: const Text("Clear"),
+              child: const Text("Clear",style: TextStyle(color: Colors.white)),
             ),
           ],
         ),
@@ -413,6 +396,8 @@ class _AdClassScreenState extends State<AdClassScreen> {
                 );
 
                 return Card(
+                  elevation: 8,
+                  shadowColor: kComplementaryColor,
                   margin: const EdgeInsets.symmetric(vertical: kSmallPadding),
                   child: Padding(
                     padding: const EdgeInsets.all(kDefaultPadding),

@@ -228,65 +228,71 @@ class _AdScheduleScreenState extends State<AdScheduleScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Padding(
-        padding: const EdgeInsets.all(kDefaultPadding),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Admin Info Header
-            _buildAdminHeader(),
-            const SizedBox(height: kLargePadding),
-
-            // Date Picker
-            _buildDatePicker(),
-            const SizedBox(height: kLargePadding),
-
-            // Schedule Form
-            _buildScheduleForm(),
-            const SizedBox(height: kLargePadding),
-
-            // Schedule List Title
-            Text(
-              'Today\'s Schedule',
-              style: kSubheadingTextStyle.copyWith(
-                color: Theme.of(context).colorScheme.onSurface,
-              ),
-            ),
-            const SizedBox(height: kSmallPadding),
-
-            // Schedule List
-            Expanded(
-              child: StreamBuilder<List<ScheduleModel>>(
-                stream: _repository.getSchedulesBySubject(
-                  widget.admin.jobTitle ?? '',
-                  _selectedDate,
+      appBar: AppBar(
+        title: const Text('FACULTY SCHEDULE'),
+        leading: Container(),
+        centerTitle: true,
+      ),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [kPrimaryColor, kComplementaryColor],
+          ),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(kDefaultPadding),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Admin Info Header
+              _buildAdminHeader(),
+              const SizedBox(height: kLargePadding),
+              // Date Picker
+              _buildDatePicker(),
+              const SizedBox(height: kLargePadding),
+              // Schedule Form
+              _buildScheduleForm(),
+              const SizedBox(height: kLargePadding),
+              // Schedule List Title
+              Text(
+                'Today\'s Schedule',
+                style: kSubheadingTextStyle.copyWith(
+                  color: Theme.of(context).colorScheme.onSurface,
                 ),
-                builder: (context, snapshot) {
-                  if (snapshot.hasError) {
-                    return Center(child: Text('Error: ${snapshot.error}'));
-                  }
-
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(child: CircularProgressIndicator());
-                  }
-
-                  final schedules = snapshot.data ?? [];
-
-                  if (schedules.isEmpty) {
-                    return _buildEmptyState();
-                  }
-
-                  return ListView.builder(
-                    itemCount: schedules.length,
-                    itemBuilder: (context, index) {
-                      final schedule = schedules[index];
-                      return _buildScheduleCard(schedule);
-                    },
-                  );
-                },
               ),
-            ),
-          ],
+              const SizedBox(height: kSmallPadding),
+              // Schedule List
+              Expanded(
+                child: StreamBuilder<List<ScheduleModel>>(
+                  stream: _repository.getSchedulesBySubject(
+                    widget.admin.jobTitle ?? '',
+                    _selectedDate,
+                  ),
+                  builder: (context, snapshot) {
+                    if (snapshot.hasError) {
+                      return Center(child: Text('Error: ${snapshot.error}'));
+                    }
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+                    final schedules = snapshot.data ?? [];
+                    if (schedules.isEmpty) {
+                      return _buildEmptyState();
+                    }
+                    return ListView.builder(
+                      itemCount: schedules.length,
+                      itemBuilder: (context, index) {
+                        final schedule = schedules[index];
+                        return _buildScheduleCard(schedule);
+                      },
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

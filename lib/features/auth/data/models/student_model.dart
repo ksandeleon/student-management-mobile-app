@@ -58,4 +58,6 @@ factory StudentModel.fromMap(Map map, {required String docId}) {
   );
 }
 
+  copyWith({required String firstName, required String lastName, required String phone, String? middleName, String? studentNumber, String? address, String? course, DateTime? dob}) {}
+
 }

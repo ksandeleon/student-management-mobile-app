@@ -1,9 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:true_studentmgnt_mobapp/config/constants.dart';
 import 'package:true_studentmgnt_mobapp/features/auth/data/models/admin_model.dart';
 import 'package:true_studentmgnt_mobapp/features/auth/data/models/student_model.dart';
 import 'package:true_studentmgnt_mobapp/features/auth/data/models/enrollment_model.dart';
+import 'package:true_studentmgnt_mobapp/features/auth/presentation/screens/welcome_screen.dart';
 
 class AdEnrollmentScreen extends StatefulWidget {
   final AdminModel admin;
@@ -46,29 +48,32 @@ class _AdEnrollmentScreenState extends State<AdEnrollmentScreen> {
 
     try {
       // First, get students who are already enrolled in this class
-      final enrollmentsSnapshot = await FirebaseFirestore.instance
-          .collection('enrollments')
-          .where('subject', isEqualTo: widget.admin.jobTitle)
-          .get();
+      final enrollmentsSnapshot =
+          await FirebaseFirestore.instance
+              .collection('enrollments')
+              .where('subject', isEqualTo: widget.admin.jobTitle)
+              .get();
 
       // Create a set of enrolled student IDs for efficient lookup
-      final enrolledIds = enrollmentsSnapshot.docs
-          .map((doc) => doc.data()['studentId'] as String)
-          .toSet();
+      final enrolledIds =
+          enrollmentsSnapshot.docs
+              .map((doc) => doc.data()['studentId'] as String)
+              .toSet();
 
       // Get all students
-      final studentsSnapshot = await FirebaseFirestore.instance
-          .collection('students')
-          .get();
+      final studentsSnapshot =
+          await FirebaseFirestore.instance.collection('students').get();
 
       // Filter out already enrolled students
-      final allStudents = studentsSnapshot.docs
-          .map((doc) => StudentModel.fromMap(doc.data(), docId: doc.id))
-          .toList();
+      final allStudents =
+          studentsSnapshot.docs
+              .map((doc) => StudentModel.fromMap(doc.data(), docId: doc.id))
+              .toList();
 
-      final unenrolledStudents = allStudents
-          .where((student) => !enrolledIds.contains(student.uid))
-          .toList();
+      final unenrolledStudents =
+          allStudents
+              .where((student) => !enrolledIds.contains(student.uid))
+              .toList();
 
       setState(() {
         _enrolledStudentIds = enrolledIds.toList();
@@ -91,11 +96,16 @@ class _AdEnrollmentScreenState extends State<AdEnrollmentScreen> {
       if (query.isEmpty) {
         _filteredStudents = _unenrolledStudents;
       } else {
-        _filteredStudents = _unenrolledStudents
-            .where((student) =>
-                '${student.firstName} ${student.lastName}'.toLowerCase().contains(query.toLowerCase()) ||
-                student.email.toLowerCase().contains(query.toLowerCase()))
-            .toList();
+        _filteredStudents =
+            _unenrolledStudents
+                .where(
+                  (student) =>
+                      '${student.firstName} ${student.lastName}'
+                          .toLowerCase()
+                          .contains(query.toLowerCase()) ||
+                      student.email.toLowerCase().contains(query.toLowerCase()),
+                )
+                .toList();
       }
     });
   }
@@ -110,15 +120,20 @@ class _AdEnrollmentScreenState extends State<AdEnrollmentScreen> {
 
     try {
       // Check if already enrolled (double-check)
-      final existingEnrollment = await FirebaseFirestore.instance
-          .collection('enrollments')
-          .where('studentId', isEqualTo: student.uid)
-          .where('subject', isEqualTo: widget.admin.jobTitle)
-          .get();
+      final existingEnrollment =
+          await FirebaseFirestore.instance
+              .collection('enrollments')
+              .where('studentId', isEqualTo: student.uid)
+              .where('subject', isEqualTo: widget.admin.jobTitle)
+              .get();
 
       if (existingEnrollment.docs.isNotEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('${student.firstName} is already enrolled in this class')),
+          SnackBar(
+            content: Text(
+              '${student.firstName} is already enrolled in this class',
+            ),
+          ),
         );
         setState(() {
           _isEnrolling = false;
@@ -132,7 +147,8 @@ class _AdEnrollmentScreenState extends State<AdEnrollmentScreen> {
         'subject': widget.admin.jobTitle,
         'enrolledAt': FieldValue.serverTimestamp(),
         'enrolledBy': widget.admin.uid, // Track who enrolled the student
-        'adminName': '${widget.admin.firstName} ${widget.admin.lastName}', // For easier querying
+        'adminName':
+            '${widget.admin.firstName} ${widget.admin.lastName}', // For easier querying
       };
 
       await FirebaseFirestore.instance
@@ -150,7 +166,9 @@ class _AdEnrollmentScreenState extends State<AdEnrollmentScreen> {
       // Show success message
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('${student.firstName} enrolled successfully in ${widget.admin.jobTitle}'),
+          content: Text(
+            '${student.firstName} enrolled successfully in ${widget.admin.jobTitle}',
+          ),
           backgroundColor: Colors.green,
         ),
       );
@@ -200,7 +218,17 @@ class _AdEnrollmentScreenState extends State<AdEnrollmentScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Enrollment Management"),
+        leading: IconButton(
+          icon: const Icon(Icons.logout),
+          onPressed: () async {
+            await FirebaseAuth.instance.signOut(); // 🔐 Sign out from Firebase
+            Navigator.pushReplacementNamed(
+              context,
+              WelcomeScreen.id,
+            ); // ⬅️ Redirect to WelcomeScreen
+          },
+        ),
+        title: const Text("ENROLL STUDENTS"),
         backgroundColor: kPrimaryColor,
         actions: [
           IconButton(
@@ -216,7 +244,16 @@ class _AdEnrollmentScreenState extends State<AdEnrollmentScreen> {
         ],
       ),
       backgroundColor: Colors.grey[100],
-      body: _buildBody(),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [kPrimaryColor, kComplementaryColor],
+          ),
+        ),
+        child: _buildBody(), // Your actual body content
+      ),
     );
   }
 
@@ -228,10 +265,11 @@ class _AdEnrollmentScreenState extends State<AdEnrollmentScreen> {
 
     try {
       // Get enrollments for this class
-      final enrollmentsSnapshot = await FirebaseFirestore.instance
-          .collection('enrollments')
-          .where('subject', isEqualTo: widget.admin.jobTitle)
-          .get();
+      final enrollmentsSnapshot =
+          await FirebaseFirestore.instance
+              .collection('enrollments')
+              .where('subject', isEqualTo: widget.admin.jobTitle)
+              .get();
 
       if (enrollmentsSnapshot.docs.isEmpty) {
         // No enrolled students
@@ -264,27 +302,35 @@ class _AdEnrollmentScreenState extends State<AdEnrollmentScreen> {
         final enrollmentData = enrollment.data();
         final studentId = enrollmentData['studentId'] as String;
 
-        final studentDoc = await FirebaseFirestore.instance
-            .collection('students')
-            .doc(studentId)
-            .get();
+        final studentDoc =
+            await FirebaseFirestore.instance
+                .collection('students')
+                .doc(studentId)
+                .get();
 
         if (studentDoc.exists) {
-          final student = StudentModel.fromMap(studentDoc.data()!, docId: studentDoc.id);
+          final student = StudentModel.fromMap(
+            studentDoc.data()!,
+            docId: studentDoc.id,
+          );
 
           enrolledStudentsList.add({
             'student': student,
             'enrollmentId': enrollment.id,
-            'enrolledAt': enrollmentData['enrolledAt'] != null
-                ? (enrollmentData['enrolledAt'] as Timestamp).toDate()
-                : DateTime.now(),
+            'enrolledAt':
+                enrollmentData['enrolledAt'] != null
+                    ? (enrollmentData['enrolledAt'] as Timestamp).toDate()
+                    : DateTime.now(),
           });
         }
       }
 
       // Sort by enrollment date (newest first)
-      enrolledStudentsList.sort((a, b) =>
-          (b['enrolledAt'] as DateTime).compareTo(a['enrolledAt'] as DateTime));
+      enrolledStudentsList.sort(
+        (a, b) => (b['enrolledAt'] as DateTime).compareTo(
+          a['enrolledAt'] as DateTime,
+        ),
+      );
 
       // Show dialog with enrolled students
       if (!mounted) return;
@@ -293,7 +339,9 @@ class _AdEnrollmentScreenState extends State<AdEnrollmentScreen> {
         context: context,
         builder: (BuildContext context) {
           return AlertDialog(
-            title: Text('${widget.admin.jobTitle} - Enrolled Students (${enrolledStudentsList.length})'),
+            title: Text(
+              '${widget.admin.jobTitle} - Enrolled Students (${enrolledStudentsList.length})',
+            ),
             content: Container(
               width: double.maxFinite,
               child: ListView.builder(
@@ -345,29 +393,38 @@ class _AdEnrollmentScreenState extends State<AdEnrollmentScreen> {
   }
 
   // Confirm before unenrolling a student
-  Future<void> _confirmUnenroll(String enrollmentId, StudentModel student) async {
+  Future<void> _confirmUnenroll(
+    String enrollmentId,
+    StudentModel student,
+  ) async {
     final result = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Unenroll Student'),
-        content: Text('Are you sure you want to unenroll ${student.firstName} ${student.lastName} from ${widget.admin.jobTitle}?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('CANCEL'),
+      builder:
+          (context) => AlertDialog(
+            title: const Text('Unenroll Student'),
+            content: Text(
+              'Are you sure you want to unenroll ${student.firstName} ${student.lastName} from ${widget.admin.jobTitle}?',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: const Text('CANCEL'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(true),
+                child: const Text(
+                  'UNENROLL',
+                  style: TextStyle(color: Colors.red),
+                ),
+              ),
+            ],
           ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('UNENROLL', style: TextStyle(color: Colors.red)),
-          ),
-        ],
-      ),
     );
 
     if (result == true) {
       await _unenrollStudent(
         enrollmentId,
-        '${student.firstName} ${student.lastName}'
+        '${student.firstName} ${student.lastName}',
       );
     }
   }
@@ -386,9 +443,7 @@ class _AdEnrollmentScreenState extends State<AdEnrollmentScreen> {
           _buildClassInfoCard(),
           _buildSearchBar(),
           _buildEnrollmentStats(),
-          Expanded(
-            child: _buildStudentsList(),
-          ),
+          Expanded(child: _buildStudentsList()),
         ],
       ),
     );
@@ -444,10 +499,7 @@ class _AdEnrollmentScreenState extends State<AdEnrollmentScreen> {
             children: [
               Text(
                 title,
-                style: const TextStyle(
-                  color: Colors.grey,
-                  fontSize: 12,
-                ),
+                style: const TextStyle(color: Colors.grey, fontSize: 12),
               ),
               Text(
                 count,
@@ -467,17 +519,13 @@ class _AdEnrollmentScreenState extends State<AdEnrollmentScreen> {
   Widget _buildClassInfoCard() {
     return Container(
       padding: const EdgeInsets.all(kLargePadding),
-      color: kSecondaryColor,
+      color: kPrimaryColor,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              const Icon(
-                Icons.school,
-                size: 48,
-                color: Colors.white,
-              ),
+              const Icon(Icons.school, size: 48, color: Colors.white),
               const SizedBox(width: kDefaultPadding),
               Expanded(
                 child: Column(
@@ -490,7 +538,9 @@ class _AdEnrollmentScreenState extends State<AdEnrollmentScreen> {
                     const SizedBox(height: kSmallPadding),
                     Text(
                       "Professor: ${widget.admin.firstName} ${widget.admin.lastName}",
-                      style: kSubheadingTextStyle.copyWith(color: Colors.white70),
+                      style: kSubheadingTextStyle.copyWith(
+                        color: Colors.white70,
+                      ),
                     ),
                   ],
                 ),
@@ -521,8 +571,11 @@ class _AdEnrollmentScreenState extends State<AdEnrollmentScreen> {
             borderRadius: BorderRadius.circular(kDefaultBorderRadius),
           ),
           filled: true,
-          fillColor: Colors.grey[100],
-          contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: kDefaultPadding),
+          fillColor: Colors.grey,
+          contentPadding: const EdgeInsets.symmetric(
+            vertical: 0,
+            horizontal: kDefaultPadding,
+          ),
         ),
       ),
     );
@@ -542,11 +595,7 @@ class _AdEnrollmentScreenState extends State<AdEnrollmentScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(
-              Icons.person_off,
-              size: 64,
-              color: Colors.grey,
-            ),
+            const Icon(Icons.person_off, size: 64, color: Colors.grey),
             const SizedBox(height: kDefaultPadding),
             const Text(
               "No students available for enrollment",
@@ -557,9 +606,7 @@ class _AdEnrollmentScreenState extends State<AdEnrollmentScreen> {
               onPressed: _loadUnenrolledStudents,
               icon: const Icon(Icons.refresh),
               label: const Text("Refresh"),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: kPrimaryColor,
-              ),
+              style: ElevatedButton.styleFrom(backgroundColor: kPrimaryColor),
             ),
           ],
         ),
@@ -622,19 +669,20 @@ class _AdEnrollmentScreenState extends State<AdEnrollmentScreen> {
                 ),
                 disabledBackgroundColor: Colors.grey,
               ),
-              child: _isEnrolling
-                ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: Colors.white,
-                    ),
-                  )
-                : const Text(
-                    "Enroll",
-                    style: TextStyle(color: Colors.white),
-                  ),
+              child:
+                  _isEnrolling
+                      ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                      : const Text(
+                        "Enroll",
+                        style: TextStyle(color: Colors.white),
+                      ),
             ),
           ],
         ),
