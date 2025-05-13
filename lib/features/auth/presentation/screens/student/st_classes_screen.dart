@@ -95,6 +95,7 @@ class _StClassesScreenState extends State<StClassesScreen> {
 
     return Scaffold(
       appBar: AppBar(
+        leading: Container(),
         title: Text(
           'My Classes',
           style: theme.textTheme.headlineMedium?.copyWith(
@@ -125,15 +126,28 @@ class _StClassesScreenState extends State<StClassesScreen> {
           ),
         ],
       ),
-      body: RefreshIndicator(
-        color: theme.colorScheme.primary,
-        onRefresh: _fetchClasses,
-        child:
-            _isLoading
-                ? _buildLoadingView()
-                : _classes.isEmpty
-                ? _buildEmptyClassesView(theme)
-                : _buildClassesListView(theme),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Theme.of(context).primaryColor,
+              Theme.of(context).colorScheme.secondary,
+            ],
+          ),
+        ),
+
+        child: RefreshIndicator(
+          color: theme.colorScheme.primary,
+          onRefresh: _fetchClasses,
+          child:
+              _isLoading
+                  ? _buildLoadingView()
+                  : _classes.isEmpty
+                  ? _buildEmptyClassesView(theme)
+                  : _buildClassesListView(theme),
+        ),
       ),
     );
   }
@@ -262,13 +276,13 @@ class _StClassesScreenState extends State<StClassesScreen> {
                     Icon(
                       Icons.person_outline,
                       size: 16,
-                      color: theme.colorScheme.secondary,
+                      color: Colors.white,
                     ),
                     const SizedBox(width: 4),
                     Text(
                       '${classData.firstName} ${classData.lastName}',
                       style: theme.textTheme.bodyMedium?.copyWith(
-                        color: theme.colorScheme.secondary,
+                        color: Colors.white,
                       ),
                     ),
                   ],
@@ -347,7 +361,7 @@ class _StClassesScreenState extends State<StClassesScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
+        color: Colors.white,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: theme.dividerColor.withOpacity(0.5)),
       ),

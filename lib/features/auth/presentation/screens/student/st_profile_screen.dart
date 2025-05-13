@@ -218,7 +218,7 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
             floating: false,
             pinned: true,
             flexibleSpace: FlexibleSpaceBar(
-              title: const Text('Student Profile'),
+              title: const Text('Go Student Profile'),
               background: Container(
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
@@ -256,16 +256,7 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 10),
-                    // School name
-                    const Text(
-                      'Tech University',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 18,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
+                    const SizedBox(height: 13),
                   ],
                 ),
               ),

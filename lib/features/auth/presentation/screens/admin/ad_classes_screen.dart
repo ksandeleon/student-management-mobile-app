@@ -210,7 +210,7 @@ class _AdClassScreenState extends State<AdClassScreen> {
   // Split widget methods for better readability
   PreferredSizeWidget _buildAppBar() {
     return AppBar(
-      title: const Text("FACULTY CLASSROOM"),
+      title: const Text("CLASSROOM"),
       backgroundColor: kPrimaryColor,
       actions: [
         // IconButton(
@@ -347,7 +347,7 @@ class _AdClassScreenState extends State<AdClassScreen> {
             const SizedBox(width: kSmallPadding),
             TextButton(
               onPressed: () => _announcementController.clear(),
-              child: const Text("Clear",style: TextStyle(color: Colors.white)),
+              child: const Text("Clear", style: TextStyle(color: Colors.white)),
             ),
           ],
         ),

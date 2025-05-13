@@ -53,10 +53,11 @@ class _StScheduleScreenState extends State<StScheduleScreen> {
       final student = Provider.of<StudentModel>(context, listen: false);
 
       // Get all enrollments for this student
-      final enrollments = await _firestore
-          .collection('enrollments')
-          .where('studentId', isEqualTo: student.uid)
-          .get();
+      final enrollments =
+          await _firestore
+              .collection('enrollments')
+              .where('studentId', isEqualTo: student.uid)
+              .get();
 
       if (enrollments.docs.isEmpty) {
         setState(() {
@@ -66,10 +67,11 @@ class _StScheduleScreenState extends State<StScheduleScreen> {
       }
 
       // Get unique subjects from enrollments
-      final subjects = enrollments.docs
-          .map((doc) => doc.data()['subject'] as String)
-          .toSet()
-          .toList();
+      final subjects =
+          enrollments.docs
+              .map((doc) => doc.data()['subject'] as String)
+              .toSet()
+              .toList();
 
       // Load today's schedules
       final today = DateTime.now();
@@ -87,32 +89,38 @@ class _StScheduleScreenState extends State<StScheduleScreen> {
       setState(() {
         _isLoading = false;
       });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error loading schedules: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error loading schedules: $e')));
     }
   }
 
-  Future<List<ScheduleModel>> _fetchSchedulesForDate(DateTime date, List<String> subjects) async {
+  Future<List<ScheduleModel>> _fetchSchedulesForDate(
+    DateTime date,
+    List<String> subjects,
+  ) async {
     final startOfDay = DateTime(date.year, date.month, date.day);
     final endOfDay = DateTime(date.year, date.month, date.day, 23, 59, 59);
 
-    final querySnapshot = await _firestore
-        .collection('schedules')
-        .where('subject', whereIn: subjects)
-        .where('date', isGreaterThanOrEqualTo: startOfDay)
-        .where('date', isLessThanOrEqualTo: endOfDay)
-        .where('status', isNotEqualTo: 'canceled')
-        .orderBy('date')
-        .orderBy('startTime')
-        .get();
+    final querySnapshot =
+        await _firestore
+            .collection('schedules')
+            .where('subject', whereIn: subjects)
+            .where('date', isGreaterThanOrEqualTo: startOfDay)
+            .where('date', isLessThanOrEqualTo: endOfDay)
+            .where('status', isNotEqualTo: 'canceled')
+            .orderBy('date')
+            .orderBy('startTime')
+            .get();
 
     return querySnapshot.docs
         .map((doc) => ScheduleModel.fromFirestore(doc.data(), doc.id))
         .toList();
   }
 
-  Future<Map<int, List<ScheduleModel>>> _fetchWeeklySchedules(List<String> subjects) async {
+  Future<Map<int, List<ScheduleModel>>> _fetchWeeklySchedules(
+    List<String> subjects,
+  ) async {
     final Map<int, List<ScheduleModel>> weeklySchedules = {};
     final startOfWeek = _selectedWeekStart;
 
@@ -144,7 +152,9 @@ class _StScheduleScreenState extends State<StScheduleScreen> {
         }
       }
 
-      final scheduleDateTime = today.add(Duration(hours: hours, minutes: minutes));
+      final scheduleDateTime = today.add(
+        Duration(hours: hours, minutes: minutes),
+      );
       final endTimeParts = schedule.endTime.split(' ');
       final endTimePartsTime = endTimeParts[0].split(':');
       int endHours = int.parse(endTimePartsTime[0]);
@@ -158,11 +168,14 @@ class _StScheduleScreenState extends State<StScheduleScreen> {
         }
       }
 
-      final endDateTime = today.add(Duration(hours: endHours, minutes: endMinutes));
+      final endDateTime = today.add(
+        Duration(hours: endHours, minutes: endMinutes),
+      );
 
       if (schedule.status == 'canceled') return 'canceled';
       if (now.isAfter(endDateTime)) return 'completed';
-      if (now.isAfter(scheduleDateTime) && now.isBefore(endDateTime)) return 'ongoing';
+      if (now.isAfter(scheduleDateTime) && now.isBefore(endDateTime))
+        return 'ongoing';
       return 'upcoming';
     } catch (e) {
       return 'upcoming'; // Default if time parsing fails
@@ -174,6 +187,7 @@ class _StScheduleScreenState extends State<StScheduleScreen> {
     final theme = Theme.of(context);
     return Scaffold(
       appBar: AppBar(
+        leading: Container(),
         title: Text(
           'My Schedule',
           style: theme.textTheme.headlineMedium?.copyWith(
@@ -191,30 +205,41 @@ class _StScheduleScreenState extends State<StScheduleScreen> {
           ),
         ],
       ),
-      body: RefreshIndicator(
-        color: theme.colorScheme.primary,
-        onRefresh: _loadSchedules,
-        child: _isLoading
-            ? _buildLoadingView()
-            : SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildTodaySection(theme),
-                    const SizedBox(height: 20),
-                    _buildWeeklyScheduleSection(theme),
-                    const SizedBox(height: 20),
-                  ],
-                ),
-              ),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Theme.of(context).primaryColor,
+              Theme.of(context).colorScheme.secondary,
+            ],
+          ),
+        ),
+        child: RefreshIndicator(
+          color: theme.colorScheme.primary,
+          onRefresh: _loadSchedules,
+          child:
+              _isLoading
+                  ? _buildLoadingView()
+                  : SingleChildScrollView(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildTodaySection(theme),
+                        const SizedBox(height: 20),
+                        _buildWeeklyScheduleSection(theme),
+                        const SizedBox(height: 20),
+                      ],
+                    ),
+                  ),
+        ),
       ),
     );
   }
 
   Widget _buildLoadingView() {
-    return const Center(
-      child: CircularProgressIndicator(),
-    );
+    return const Center(child: CircularProgressIndicator());
   }
 
   Widget _buildTodaySection(ThemeData theme) {
@@ -228,15 +253,9 @@ class _StScheduleScreenState extends State<StScheduleScreen> {
         children: [
           Row(
             children: [
-              Icon(
-                Icons.event,
-                color: theme.colorScheme.secondary,
-              ),
+              Icon(Icons.event, color: theme.colorScheme.secondary),
               const SizedBox(width: 8),
-              Text(
-                'Today\'s Schedule',
-                style: theme.textTheme.titleLarge,
-              ),
+              Text('Today\'s Schedule', style: theme.textTheme.titleLarge),
             ],
           ),
           const SizedBox(height: 4),
@@ -250,15 +269,15 @@ class _StScheduleScreenState extends State<StScheduleScreen> {
           _todaySchedules.isEmpty
               ? _buildEmptyScheduleCard(theme, 'No classes scheduled for today')
               : ListView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: _todaySchedules.length,
-                  itemBuilder: (context, index) {
-                    final schedule = _todaySchedules[index];
-                    final status = _getScheduleStatus(schedule);
-                    return _buildScheduleCard(schedule, status, theme);
-                  },
-                ),
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: _todaySchedules.length,
+                itemBuilder: (context, index) {
+                  final schedule = _todaySchedules[index];
+                  final status = _getScheduleStatus(schedule);
+                  return _buildScheduleCard(schedule, status, theme);
+                },
+              ),
         ],
       ),
     );
@@ -283,10 +302,7 @@ class _StScheduleScreenState extends State<StScheduleScreen> {
                     color: theme.colorScheme.secondary,
                   ),
                   const SizedBox(width: 8),
-                  Text(
-                    'Weekly View',
-                    style: theme.textTheme.titleLarge,
-                  ),
+                  Text('Weekly View', style: theme.textTheme.titleLarge),
                 ],
               ),
               Row(
@@ -295,7 +311,9 @@ class _StScheduleScreenState extends State<StScheduleScreen> {
                     icon: const Icon(Icons.chevron_left),
                     onPressed: () {
                       setState(() {
-                        _selectedWeekStart = _selectedWeekStart.subtract(const Duration(days: 7));
+                        _selectedWeekStart = _selectedWeekStart.subtract(
+                          const Duration(days: 7),
+                        );
                         _loadSchedules();
                       });
                     },
@@ -308,7 +326,9 @@ class _StScheduleScreenState extends State<StScheduleScreen> {
                     icon: const Icon(Icons.chevron_right),
                     onPressed: () {
                       setState(() {
-                        _selectedWeekStart = _selectedWeekStart.add(const Duration(days: 7));
+                        _selectedWeekStart = _selectedWeekStart.add(
+                          const Duration(days: 7),
+                        );
                         _loadSchedules();
                       });
                     },
@@ -323,9 +343,10 @@ class _StScheduleScreenState extends State<StScheduleScreen> {
             child: Row(
               children: List.generate(7, (index) {
                 final dayDate = _selectedWeekStart.add(Duration(days: index));
-                final isToday = dayDate.day == today.day &&
-                                dayDate.month == today.month &&
-                                dayDate.year == today.year;
+                final isToday =
+                    dayDate.day == today.day &&
+                    dayDate.month == today.month &&
+                    dayDate.year == today.year;
 
                 return GestureDetector(
                   onTap: () {
@@ -335,18 +356,25 @@ class _StScheduleScreenState extends State<StScheduleScreen> {
                   },
                   child: Container(
                     margin: const EdgeInsets.only(right: 12),
-                    padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 8,
+                      horizontal: 16,
+                    ),
                     decoration: BoxDecoration(
-                      color: _selectedDayIndex == index
-                          ? theme.colorScheme.primary
-                          : isToday
+                      color:
+                          _selectedDayIndex == index
+                              ? theme.colorScheme.primary
+                              : isToday
                               ? theme.colorScheme.primary.withOpacity(0.1)
                               : Colors.transparent,
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(
-                        color: isToday || _selectedDayIndex == index
-                            ? theme.colorScheme.primary
-                            : theme.colorScheme.onBackground.withOpacity(0.2),
+                        color:
+                            isToday || _selectedDayIndex == index
+                                ? theme.colorScheme.primary
+                                : theme.colorScheme.onBackground.withOpacity(
+                                  0.2,
+                                ),
                       ),
                     ),
                     child: Column(
@@ -354,28 +382,32 @@ class _StScheduleScreenState extends State<StScheduleScreen> {
                         Text(
                           days[index],
                           style: theme.textTheme.bodyMedium?.copyWith(
-                            color: _selectedDayIndex == index
-                                ? theme.colorScheme.onPrimary
-                                : isToday
+                            color:
+                                _selectedDayIndex == index
+                                    ? theme.colorScheme.onPrimary
+                                    : isToday
                                     ? theme.colorScheme.primary
                                     : theme.colorScheme.onBackground,
-                            fontWeight: isToday || _selectedDayIndex == index
-                                ? FontWeight.bold
-                                : null,
+                            fontWeight:
+                                isToday || _selectedDayIndex == index
+                                    ? FontWeight.bold
+                                    : null,
                           ),
                         ),
                         const SizedBox(height: 4),
                         Text(
                           dayDate.day.toString(),
                           style: theme.textTheme.titleMedium?.copyWith(
-                            color: _selectedDayIndex == index
-                                ? theme.colorScheme.onPrimary
-                                : isToday
+                            color:
+                                _selectedDayIndex == index
+                                    ? theme.colorScheme.onPrimary
+                                    : isToday
                                     ? theme.colorScheme.primary
                                     : theme.colorScheme.onBackground,
-                            fontWeight: isToday || _selectedDayIndex == index
-                                ? FontWeight.bold
-                                : null,
+                            fontWeight:
+                                isToday || _selectedDayIndex == index
+                                    ? FontWeight.bold
+                                    : null,
                           ),
                         ),
                       ],
@@ -387,16 +419,19 @@ class _StScheduleScreenState extends State<StScheduleScreen> {
           ),
           const SizedBox(height: 16),
           _weeklySchedules[_selectedDayIndex]?.isEmpty ?? true
-              ? _buildEmptyScheduleCard(theme, 'No classes scheduled for this day')
+              ? _buildEmptyScheduleCard(
+                theme,
+                'No classes scheduled for this day',
+              )
               : ListView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: _weeklySchedules[_selectedDayIndex]?.length ?? 0,
-                  itemBuilder: (context, index) {
-                    final schedule = _weeklySchedules[_selectedDayIndex]![index];
-                    return _buildScheduleCard(schedule, 'upcoming', theme);
-                  },
-                ),
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: _weeklySchedules[_selectedDayIndex]?.length ?? 0,
+                itemBuilder: (context, index) {
+                  final schedule = _weeklySchedules[_selectedDayIndex]![index];
+                  return _buildScheduleCard(schedule, 'upcoming', theme);
+                },
+              ),
         ],
       ),
     );
@@ -412,21 +447,19 @@ class _StScheduleScreenState extends State<StScheduleScreen> {
             color: theme.colorScheme.secondary.withOpacity(0.5),
           ),
           const SizedBox(height: 16),
-          Text(
-            message,
-            style: theme.textTheme.titleMedium,
-          ),
+          Text(message, style: theme.textTheme.titleMedium),
           const SizedBox(height: 8),
-          Text(
-            'Enjoy your free time!',
-            style: theme.textTheme.bodyMedium,
-          ),
+          Text('Enjoy your free time!', style: theme.textTheme.bodyMedium),
         ],
       ),
     );
   }
 
-  Widget _buildScheduleCard(ScheduleModel schedule, String status, ThemeData theme) {
+  Widget _buildScheduleCard(
+    ScheduleModel schedule,
+    String status,
+    ThemeData theme,
+  ) {
     // Determine status color
     Color statusColor;
     String statusText;
@@ -484,9 +517,11 @@ class _StScheduleScreenState extends State<StScheduleScreen> {
         final difference = startTime.difference(now);
 
         if (difference.inHours > 0) {
-          timeText = '${difference.inHours}h ${difference.inMinutes % 60}m remaining';
+          timeText =
+              '${difference.inHours}h ${difference.inMinutes % 60}m remaining';
         } else if (difference.inMinutes > 0) {
-          timeText = '${difference.inMinutes}m ${difference.inSeconds % 60}s remaining';
+          timeText =
+              '${difference.inMinutes}m ${difference.inSeconds % 60}s remaining';
         } else {
           timeText = '${difference.inSeconds}s remaining';
         }
@@ -513,7 +548,10 @@ class _StScheduleScreenState extends State<StScheduleScreen> {
             Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: statusColor.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(4),
@@ -521,11 +559,7 @@ class _StScheduleScreenState extends State<StScheduleScreen> {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(
-                        statusIcon,
-                        size: 16,
-                        color: statusColor,
-                      ),
+                      Icon(statusIcon, size: 16, color: statusColor),
                       const SizedBox(width: 4),
                       Text(
                         statusText,
@@ -562,32 +596,26 @@ class _StScheduleScreenState extends State<StScheduleScreen> {
                   color: theme.colorScheme.secondary,
                 ),
                 const SizedBox(width: 4),
-                Text(
-                  schedule.room,
-                  style: theme.textTheme.bodyMedium,
-                ),
+                Text(schedule.room, style: theme.textTheme.bodyMedium),
               ],
             ),
             if (status == 'upcoming') ...[
               const SizedBox(height: 8),
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                padding: const EdgeInsets.symmetric(
+                  vertical: 8,
+                  horizontal: 12,
+                ),
                 decoration: BoxDecoration(
                   color: Colors.orange.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(
-                    color: Colors.orange.withOpacity(0.3),
-                  ),
+                  border: Border.all(color: Colors.orange.withOpacity(0.3)),
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(
-                      Icons.timer,
-                      size: 16,
-                      color: Colors.orange,
-                    ),
+                    const Icon(Icons.timer, size: 16, color: Colors.orange),
                     const SizedBox(width: 8),
                     Text(
                       timeText,
@@ -604,22 +632,19 @@ class _StScheduleScreenState extends State<StScheduleScreen> {
               const SizedBox(height: 8),
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                padding: const EdgeInsets.symmetric(
+                  vertical: 8,
+                  horizontal: 12,
+                ),
                 decoration: BoxDecoration(
                   color: Colors.red.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(
-                    color: Colors.red.withOpacity(0.3),
-                  ),
+                  border: Border.all(color: Colors.red.withOpacity(0.3)),
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(
-                      Icons.info_outline,
-                      size: 16,
-                      color: Colors.red,
-                    ),
+                    const Icon(Icons.info_outline, size: 16, color: Colors.red),
                     const SizedBox(width: 8),
                     Text(
                       'Class has been canceled',
@@ -644,7 +669,7 @@ class _StScheduleScreenState extends State<StScheduleScreen> {
                       icon: const Icon(Icons.details),
                       label: const Text('Details'),
                       style: OutlinedButton.styleFrom(
-                        foregroundColor: theme.colorScheme.primary,
+                        foregroundColor: Colors.white,
                         side: BorderSide(color: theme.colorScheme.primary),
                       ),
                     ),
